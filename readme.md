@@ -2,12 +2,10 @@
 
 ## TODO:
 
-1. Stores Mock parameters (e.g. `client_def`, `client_type`...)
-	- See icb modules
-2. Setup an HTTP server
+- Setup an HTTP server
 	- Let's use Hyper
-3. Deserialize IBC protobuf queries
-4. Serialize response
+- Deserialize IBC jsonRPC queries
+- Serialize response
 
 **Storage**:
 The light client relies on two functions from Tendermint RPC:
@@ -20,10 +18,9 @@ To implement RPC the `[terdermint_rpc](https://github.com/informalsystems/tender
 
 ## Questions:
 
-- What are the server parameters?
-- How do I deserialize? `try_from_raw`?
-- Where are messages definitions?
-- What is the client used for?
+- JSON RPC request wrapper is not public (see [code](https://docs.rs/tendermint-rpc/0.16.0/src/tendermint_rpc/request.rs.html#1-50))
+- tendermint-rpc expects a string for the `height` parameter, but the light client doc says that is send a number (see [doc](https://github.com/informalsystems/tendermint-rs/blob/master/docs/spec/lightclient/verification/verification.md#used-remote-functions))
+
 
 ## Useful links:
 - [IBC modules](https://github.com/informalsystems/ibc-rs/tree/master/modules)
