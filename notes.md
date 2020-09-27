@@ -13,12 +13,23 @@ Light clients may use different type of storage, for instance chain A's light cl
 
 A light node is a process running a light clients, it can be used as a standalone daemon.
 
-A light client communicate with the blochain (i.e. talks to a full node) through the RPC interface.
+A light client communicate with the blockhain (i.e. talks to a full node) through the RPC interface.
 
 Useful resources:
 - [Light client verification](https://github.com/informalsystems/tendermint-rs/blob/master/docs/spec/lightclient/verification/verification.md)
 - [Foreign interface](https://github.com/informalsystems/tendermint-rs/blob/master/docs/spec/lightclient/verification/verification.md#used-remote-functions).
 
+
+## Light nodes
+
+A light node is a process running a light client, it exposes a jsonrpc interface.
+
+I couldn't manage to actually run a light client (see error below + 'header does not match' using a single localhost (go) terndermint full node.
+
+However, looking at the [code](https://github.com/informalsystems/tendermint-rs/blob/master/light-node/src/rpc.rs), it seems that it actually support only two queries:
+
+- `state`
+- `status`
 
 ## Mocked block-chain
 
