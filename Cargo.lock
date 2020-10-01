@@ -604,6 +604,7 @@ dependencies = [
  "jsonrpc-derive",
  "jsonrpc-http-server",
  "serde_json",
+ "tendermint",
  "tendermint-rpc",
  "tokio 0.2.22",
 ]
