@@ -49,7 +49,7 @@ The light node fails on initialization due to a parse error while parsing the fu
 Start a full node using ibc-rs example container:
 
 ```sh
-doker run --rm -d -p 26656:26656 -p 26657:26657 informaldev/chain_a
+docker run --rm -d -p 26656:26656 -p 26657:26657 informaldev/chain_a
 ```
 
 Get a header hash:

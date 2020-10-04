@@ -1,58 +1,72 @@
-use hyper::body::to_bytes;
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
-use std::convert::Infallible;
-use std::net::SocketAddr;
+use jsonrpc_core;
+use jsonrpc_core::{serde_json, Error as JsonError, IoHandler, Params, Result as JsonResult};
+use jsonrpc_derive::rpc;
+use jsonrpc_http_server::ServerBuilder;
+use tendermint_rpc::endpoint::{
+    commit::Request as CommitRequest, validators::Request as ValidatorsRequest,
+};
 
-use tendermint_rpc::endpoint;
+mod blocks; // TODO
+mod cli;
 
-type IError = Box<dyn std::error::Error + Send + Sync>;
+#[rpc(server)]
+pub trait Rpc {
+    #[rpc(name = "commit", params = "raw")]
+    fn commit(&self, req: Params) -> JsonResult<String>;
 
-#[tokio::main]
-async fn main() {
-    // We'll bind to 127.0.0.1:3000
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-
-    // A `Service` is needed for every connection, so this
-    // creates one from our `hello_world` function.
-    let make_svc = make_service_fn(|_conn| async {
-        // service_fn converts our function into a `Service`
-        Ok::<_, Infallible>(service_fn(handler))
-    });
-
-    let server = Server::bind(&addr).serve(make_svc);
-
-    // Run this server for... forever!
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
-    }
+    #[rpc(name = "validators", params = "raw")]
+    fn validators(&self, req: Params) -> JsonResult<String>;
 }
 
-async fn handler(req: Request<Body>) -> Result<Response<Body>, IError> {
-    let response = match (req.method(), req.uri().path()) {
-        (&Method::POST, "/commit") => handle_commit(to_bytes(req.into_body()).await?),
-        (&Method::POST, "/validators") => handle_validators(to_bytes(req.into_body()).await?),
-        (method, path) => {
-            let mut response =
-                Response::new(format!("Wrong path or method: {} {}\n", method, path).into());
-            *response.status_mut() = StatusCode::NOT_FOUND;
-            Ok(response)
+/// A JsonRPC server.
+struct Server {
+    verbose: bool,
+}
+
+impl Rpc for Server {
+    /// JsonRPC /commit endpoint.
+    fn commit(&self, req: Params) -> JsonResult<String> {
+        let req: CommitRequest = parse(req)?;
+        if self.verbose {
+            println!("{:?}", req);
         }
-    };
-    if let Err(err) = response.as_ref() {
-        println!("Error: {}", err);
+        Ok("hello".to_string())
     }
-    response
+
+    /// JsonRPC /validators endpoint.
+    fn validators(&self, req: Params) -> JsonResult<String> {
+        let req: ValidatorsRequest = parse(req)?;
+        if self.verbose {
+            println!("{:?}", req);
+        }
+        Ok("hello".to_string())
+    }
 }
 
-fn handle_commit(body: hyper::body::Bytes) -> Result<Response<Body>, IError> {
-    let req: endpoint::commit::Request = serde_json::from_slice(&body)?;
-    println!("Success commit: {:?}", req);
-    Ok(Response::new("commit\n".into()))
+fn main() {
+    let args = cli::get_args();
+    let server = Server {
+        verbose: args.verbose,
+    };
+    let mut io = IoHandler::new();
+    io.extend_with(server.to_delegate());
+
+    let server = ServerBuilder::new(io)
+        .start_http(&format!("127.0.0.1:{}", args.port).parse().unwrap())
+        .expect("Unable to start RPC server");
+
+    server.wait();
 }
 
-fn handle_validators(body: hyper::body::Bytes) -> Result<Response<Body>, IError> {
-    let req: endpoint::validators::Request = serde_json::from_slice(&body)?;
-    println!("Success validators: {:?}", req);
-    Ok(Response::new("commit\n".into()))
+/// Deserializes raw parameters of a JsonRPC request.
+fn parse<T>(params: Params) -> Result<T, JsonError>
+where
+    T: jsonrpc_core::serde::de::DeserializeOwned,
+{
+    let params = match params {
+        Params::None => serde_json::Value::Null,
+        Params::Array(vals) => serde_json::Value::Array(vals),
+        Params::Map(val) => serde_json::Value::Object(val),
+    };
+    serde_json::from_value(params).map_err(|err| JsonError::invalid_params(err.to_string()))
 }
