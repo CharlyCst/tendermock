@@ -15,6 +15,9 @@ jsonrpc-core = "15.0"
 jsonrpc-http-server = "15.0"
 jsonrpc-derive = "15.0"
 
+# TODO: import this properly
+tendermint-testgen = { version = "0.1.0", path = "../tmp/tendermint-rs/testgen" }
+
 [dependencies.clap]
 version = "3.0.0-beta.1"
 default-features = false

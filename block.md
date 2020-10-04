@@ -28,7 +28,7 @@ A simple list of evidences, let's use an empty list.
 
 The hard part...
 
-```
+```rs
 pub struct Header {
     pub version:              Version,
     pub chain_id:             chain::Id,
