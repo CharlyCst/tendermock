@@ -3,10 +3,13 @@ use jsonrpc_core::{serde_json, Error as JsonError, IoHandler, Params, Result as 
 use jsonrpc_derive::rpc;
 use jsonrpc_http_server::ServerBuilder;
 use tendermint_rpc::endpoint::{
+    abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
+    abci_query::Request as AbciQueryRequest, abci_query::Response as AbciQueryResponse,
     commit::Request as CommitRequest, commit::Response as CommitResponse,
     validators::Request as ValidatorsRequest, validators::Response as ValidatorResponse,
 };
 
+mod abci;
 mod blocks;
 mod cli;
 
@@ -17,6 +20,12 @@ pub trait Rpc {
 
     #[rpc(name = "validators", params = "raw")]
     fn validators(&self, req: Params) -> JsonResult<ValidatorResponse>;
+
+    #[rpc(name = "abci_info", params = "raw")]
+    fn abci_info(&self, req: Params) -> JsonResult<AbciInfoResponse>;
+
+    #[rpc(name = "abci_query", params = "raw")]
+    fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse>;
 }
 
 /// A JsonRPC server.
@@ -44,14 +53,39 @@ impl Rpc for Server {
     fn validators(&self, req: Params) -> JsonResult<ValidatorResponse> {
         let req: ValidatorsRequest = parse(req)?;
         if self.verbose {
-            println!("JsonRpc /validators {:?}", req);
+            println!("JsonRPC /validators {:?}", req);
         }
         let validators = blocks::_get_validators();
         let validators_responde = ValidatorResponse {
             block_height: tendermint::block::Height(1),
-            validators
+            validators,
         };
         Ok(validators_responde)
+    }
+
+    /// JsonRPC /abci_info endpoint.
+    fn abci_info(&self, req: Params) -> JsonResult<AbciInfoResponse> {
+        let req: AbciInfoRequest = parse(req)?;
+        if self.verbose {
+            println!("JsonRPC /abci_info  {:?}", req);
+        }
+        // TODO: have a meaningful response
+        let abci_info_response = AbciInfoResponse {
+            response: abci::get_info(),
+        };
+        Ok(abci_info_response)
+    }
+
+    /// JsonRPC /abci_query endpoint.
+    fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse> {
+        let req: AbciQueryRequest = parse(req)?;
+        if self.verbose {
+            println!("JsonRPC /abci_info  {:?}", req);
+        }
+        let abci_query_response = AbciQueryResponse {
+            response: abci::handle_query(req),
+        };
+        Ok(abci_query_response)
     }
 }
 
