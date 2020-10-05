@@ -29,7 +29,7 @@ impl Rpc for Server {
     fn commit(&self, req: Params) -> JsonResult<CommitResponse> {
         let req: CommitRequest = parse(req)?;
         if self.verbose {
-            println!("{:?}", req);
+            println!("JsonRPC /commit     {:?}", req);
         }
         let signed_header = blocks::_get_signed_header();
         let commit_response = CommitResponse {
@@ -44,7 +44,7 @@ impl Rpc for Server {
     fn validators(&self, req: Params) -> JsonResult<ValidatorResponse> {
         let req: ValidatorsRequest = parse(req)?;
         if self.verbose {
-            println!("{:?}", req);
+            println!("JsonRpc /validators {:?}", req);
         }
         let validators = blocks::_get_validators();
         let validators_responde = ValidatorResponse {
@@ -63,6 +63,7 @@ fn main() {
     let mut io = IoHandler::new();
     io.extend_with(server.to_delegate());
 
+    println!("Starting JsonRPC");
     let server = ServerBuilder::new(io)
         .start_http(&format!("127.0.0.1:{}", args.port).parse().unwrap())
         .expect("Unable to start RPC server");

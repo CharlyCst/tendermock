@@ -6,23 +6,26 @@ use tendermint_testgen::Generator;
 /// Builds a header
 fn _get_header() -> tendermint_testgen::Header {
     let validator = tendermint_testgen::Validator::new("validator_1");
-    tendermint_testgen::Header::new(&[validator])
+    let mut header = tendermint_testgen::Header::new(&[validator]);
+    header.time =
+        Some(tendermint::Time::parse_from_rfc3339(&"2020-10-05T13:15:29.353443781Z").unwrap());
+    header
+}
+
+/// Builds a header
+pub fn _get_commit() -> tendermint_testgen::Commit {
+    let header = _get_header();
+    tendermint_testgen::Commit::new(header, 0)
 }
 
 /// Builds a block
-fn _get_bloc() -> block::Block {
+pub fn _get_block() -> block::Block {
     block::Block {
         header: _get_header().generate().unwrap(),
         data: abci::transaction::Data::new(vec![]),
         evidence: evidence::Data::new(vec![]),
         last_commit: None,
     }
-}
-
-/// Builds a commit
-fn _get_commit() -> tendermint_testgen::Commit {
-    let header = _get_header();
-    tendermint_testgen::Commit::new(header, 0)
 }
 
 pub fn _get_signed_header() -> block::signed_header::SignedHeader {
@@ -33,6 +36,8 @@ pub fn _get_signed_header() -> block::signed_header::SignedHeader {
 }
 
 pub fn _get_validators() -> Vec<validator::Info> {
-    let validator = tendermint_testgen::Validator::new("validator_1").generate().unwrap();
+    let validator = tendermint_testgen::Validator::new("validator_1")
+        .generate()
+        .unwrap();
     vec![validator]
 }
