@@ -4,6 +4,7 @@
 	"method": "abci_query",
 	"params": {
 		"path": "/a/b/c",
-		"data": "ThisIsATest"
+		"data": "abbaab",
+		"prove": false
 	}
 }

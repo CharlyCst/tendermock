@@ -12,6 +12,7 @@ use tendermint_rpc::endpoint::{
 mod abci;
 mod blocks;
 mod cli;
+mod store;
 
 #[rpc(server)]
 pub trait Rpc {
@@ -69,7 +70,6 @@ impl Rpc for Server {
         if self.verbose {
             println!("JsonRPC /abci_info  {:?}", req);
         }
-        // TODO: have a meaningful response
         let abci_info_response = AbciInfoResponse {
             response: abci::get_info(),
         };

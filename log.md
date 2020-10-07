@@ -16,4 +16,15 @@ Successfully runned a light-node against the mocked Tendermint node:
 - Relevent specification can be found in [ICS 24 (Host Requirements)](https://github.com/cosmos/ics/tree/master/spec/ics-024-host-requirements).
 - From ICS 24 values stores **MUST** use the canonical encoding, proto3 files are provided with the spec.
 
+### October 7
+
+- Added support for Merk store.
+- Handle `/abci_query` and `/abci_info`
+
+To resolve:
+
+- How does the relayer submit transaction? Didn't see any use of the rpc client for that.
+- tendermint-rpc is build for client support, but does not expose request internal values (nedded to implement a server)
+- How to handle the 'height' param in queries?
+
 

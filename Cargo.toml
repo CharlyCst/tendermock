@@ -14,6 +14,7 @@ tendermint = "0.16.0"
 jsonrpc-core = "15.0"
 jsonrpc-http-server = "15.0"
 jsonrpc-derive = "15.0"
+merk = "1.0.0"
 
 # TODO: import this properly
 tendermint-testgen = { version = "0.1.0", path = "../tmp/tendermint-rs/testgen" }

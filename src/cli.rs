@@ -9,7 +9,7 @@ pub struct Args {
     #[clap(short, long)]
     pub verbose: bool,
 
-    /// JsonRPC port, default to 26657
+    /// JsonRPC port
     #[clap(short, long, default_value="26657")]
     pub port: u16,
 }
