@@ -43,6 +43,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1fd36ffbb1fb7c834eac128ea8d0e310c5aeb635548f9d58861e1308d46e71c"
+
+[[package]]
 name = "arrayvec"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -775,9 +781,9 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.7.11"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d47946d458e94a1b7bcabbf6521ea7c037062c81f534615abcad76e84d4970d"
+checksum = "f56a2d0bc861f9165be4eb3442afd3c236d8a98afd426f65d92324ae1091a484"
 dependencies = [
  "either",
 ]
@@ -1256,27 +1262,36 @@ dependencies = [
 ]
 
 [[package]]
-name = "prost-amino"
-version = "0.6.0"
+name = "prost"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6dda006a6c21ae45e261a5a756f2a3e5299722eedae2405f4747dd6a5b47556e"
+checksum = "ce49aefe0a6144a45de32927c77bd2859a5f7677b55f220ae5b744e87389c212"
 dependencies = [
- "byteorder",
  "bytes 0.5.6",
+ "prost-derive",
 ]
 
 [[package]]
-name = "prost-amino-derive"
+name = "prost-derive"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bbb97577964b9ff334506e319a7628af460f59a6be1da592b5bdccb6a78e921"
+checksum = "537aa19b95acde10a12fec4301466386f757403de4cd4e5b4fa78fb5ecb18f72"
 dependencies = [
- "failure",
+ "anyhow",
  "itertools",
  "proc-macro2",
  "quote",
- "sha2",
  "syn",
+]
+
+[[package]]
+name = "prost-types"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1834f67c0697c001304b75be76f67add9c89742eda3a085ad8ee0bb38c3417aa"
+dependencies = [
+ "bytes 0.5.6",
+ "prost",
 ]
 
 [[package]]
@@ -1368,6 +1383,15 @@ name = "regex-syntax"
 version = "0.6.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26412eb97c6b088a6997e05f69403a802a92d520de2f8e63c2b65f9e0f47c4e8"
+
+[[package]]
+name = "remove_dir_all"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+dependencies = [
+ "winapi 0.3.9",
+]
 
 [[package]]
 name = "rocksdb"
@@ -1590,19 +1614,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "tai64"
+name = "tempfile"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4014289c3d2b8168880ae86633247e73712fcc579969aff0ca7c5dcd17456b82"
+checksum = "7a6e24d9338a0a5be79593e2fa15a648add6138caa803e2d5bc782c371732ca9"
 dependencies = [
- "chrono",
+ "cfg-if",
+ "libc",
+ "rand",
+ "redox_syscall",
+ "remove_dir_all",
+ "winapi 0.3.9",
 ]
 
 [[package]]
 name = "tendermint"
 version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b45e7fd7fa5d049de343112ad0d2f45e65e8c700bc395aaed0c806906295b27e"
+source = "git+https://github.com/CharlyCst/tendermint-rs#efd0a3751d015ed17dfa0ed8821823ecc2abb734"
 dependencies = [
  "anomaly",
  "async-trait",
@@ -1612,8 +1640,8 @@ dependencies = [
  "ed25519-dalek",
  "futures 0.3.5",
  "once_cell",
- "prost-amino",
- "prost-amino-derive",
+ "prost",
+ "prost-types",
  "serde",
  "serde_bytes",
  "serde_json",
@@ -1622,19 +1650,31 @@ dependencies = [
  "signature",
  "subtle",
  "subtle-encoding",
- "tai64",
+ "tendermint-proto",
  "thiserror",
  "toml",
  "zeroize",
 ]
 
 [[package]]
+name = "tendermint-proto"
+version = "0.1.0"
+source = "git+https://github.com/CharlyCst/tendermint-rs#efd0a3751d015ed17dfa0ed8821823ecc2abb734"
+dependencies = [
+ "anomaly",
+ "bytes 0.5.6",
+ "prost",
+ "prost-types",
+ "thiserror",
+]
+
+[[package]]
 name = "tendermint-rpc"
 version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b718face63ee456cb7305902db0bcdd3b233666cbcf25aa95c173c1252792b4c"
+source = "git+https://github.com/CharlyCst/tendermint-rs#efd0a3751d015ed17dfa0ed8821823ecc2abb734"
 dependencies = [
  "bytes 0.5.6",
+ "chrono",
  "getrandom",
  "serde",
  "serde_bytes",
@@ -1647,12 +1687,14 @@ dependencies = [
 [[package]]
 name = "tendermint-testgen"
 version = "0.1.0"
+source = "git+https://github.com/CharlyCst/tendermint-rs#efd0a3751d015ed17dfa0ed8821823ecc2abb734"
 dependencies = [
  "ed25519-dalek",
  "gumdrop",
  "serde",
  "serde_json",
  "simple-error",
+ "tempfile",
  "tendermint",
 ]
 

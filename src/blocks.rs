@@ -8,7 +8,7 @@ fn _get_header() -> tendermint_testgen::Header {
     let validator = tendermint_testgen::Validator::new("validator_1");
     let mut header = tendermint_testgen::Header::new(&[validator]);
     header.time =
-        Some(tendermint::Time::parse_from_rfc3339(&"2020-10-05T13:15:29.353443781Z").unwrap());
+        Some(16000000); // TODO: find a valid timestamp
     header
 }
 

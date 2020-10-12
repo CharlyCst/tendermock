@@ -9,15 +9,15 @@ name = "tendermock"
 path = "src/main.rs"
 
 [dependencies]
-tendermint-rpc = "0.16.0"
-tendermint = "0.16.0"
 jsonrpc-core = "15.0"
 jsonrpc-http-server = "15.0"
 jsonrpc-derive = "15.0"
 merk = "1.0.0"
 
 # TODO: import this properly
-tendermint-testgen = { version = "0.1.0", path = "../tmp/tendermint-rs/testgen" }
+tendermint = { git = "https://github.com/CharlyCst/tendermint-rs" }
+tendermint-testgen = { git = "https://github.com/CharlyCst/tendermint-rs" }
+tendermint-rpc = { git  = "https://github.com/CharlyCst/tendermint-rs"  }
 
 [dependencies.clap]
 version = "3.0.0-beta.1"
