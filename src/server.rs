@@ -31,12 +31,12 @@ pub trait Rpc {
 /// A JsonRPC server.
 pub struct Server {
     verbose: bool,
-    store: Mutex<store::Store>,
+    store: Mutex<store::InMemoryStore>,
 }
 
 impl Server {
     pub fn new(verbose: bool) -> Self {
-        let store = store::Store::new();
+        let store = store::InMemoryStore::new();
         let store = Mutex::new(store);
         Server { verbose, store }
     }
@@ -91,7 +91,7 @@ impl Rpc for Server {
         }
         let store = self.store.lock().unwrap();
         let abci_query_response = AbciQueryResponse {
-            response: abci::handle_query(req, &store),
+            response: abci::handle_query(req, &*store),
         };
         Ok(abci_query_response)
     }

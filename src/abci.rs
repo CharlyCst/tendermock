@@ -4,7 +4,7 @@ use tendermint_rpc::endpoint::{
     abci_info::AbciInfo, abci_query::AbciQuery, abci_query::Request as AbciQueryRequest,
 };
 
-use crate::store::Store;
+use crate::store::Storage;
 
 pub fn get_info() -> AbciInfo {
     AbciInfo {
@@ -16,11 +16,11 @@ pub fn get_info() -> AbciInfo {
     }
 }
 
-pub fn handle_query(query: AbciQueryRequest, store: &Store) -> AbciQuery {
+pub fn handle_query<T: Storage>(query: AbciQueryRequest, store: &T) -> AbciQuery {
     // let path = query.
     AbciQuery {
         code: Code::Err(1),
-        log: Log::from("{}"),
+        log: Log::from("Does not exist"),
         info: "abci_query is not yet implemented".to_string(),
         index: 0,
         key: vec![],
