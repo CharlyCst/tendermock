@@ -29,20 +29,19 @@ pub trait Rpc {
 }
 
 /// A JsonRPC server.
-pub struct Server {
+pub struct Server<S: store::Storage> {
     verbose: bool,
-    store: Mutex<store::InMemoryStore>,
+    store: Mutex<S>,
 }
 
-impl Server {
-    pub fn new(verbose: bool) -> Self {
-        let store = store::InMemoryStore::new();
+impl<S: store::Storage> Server<S> {
+    pub fn new(verbose: bool, store: S) -> Self {
         let store = Mutex::new(store);
         Server { verbose, store }
     }
 }
 
-impl Rpc for Server {
+impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     /// JsonRPC /commit endpoint.
     fn commit(&self, req: Params) -> JsonResult<CommitResponse> {
         let req: CommitRequest = parse(req)?;

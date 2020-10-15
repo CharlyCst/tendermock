@@ -26,7 +26,7 @@ impl InMemoryStore {
 
 impl Storage for InMemoryStore {
     fn set(&mut self, height: u64, path: Vec<u8>, value: Vec<u8>) -> Option<()> {
-        let mut store = self.store.get_mut(height as usize)?;
+        let store = self.store.get_mut(height as usize)?;
         store.insert(path, value);
         Some(())
     }
@@ -37,7 +37,7 @@ impl Storage for InMemoryStore {
     }
 
     fn delete(&mut self, height: u64, path: &[u8]) -> Option<()> {
-        let mut store = self.store.get_mut(height as usize)?;
+        let store = self.store.get_mut(height as usize)?;
         store.remove(path);
         Some(())
     }

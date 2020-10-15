@@ -12,12 +12,13 @@ path = "src/main.rs"
 jsonrpc-core = "15.0"
 jsonrpc-http-server = "15.0"
 jsonrpc-derive = "15.0"
-merk = "1.0.0"
+# merk = "1.0.0"
 
 # TODO: import this properly
 tendermint = { git = "https://github.com/CharlyCst/tendermint-rs" }
 tendermint-testgen = { git = "https://github.com/CharlyCst/tendermint-rs" }
 tendermint-rpc = { git  = "https://github.com/CharlyCst/tendermint-rs"  }
+tendermint-proto = { git = "https://github.com/CharlyCst/tendermint-rs" }
 
 [dependencies.clap]
 version = "3.0.0-beta.1"
