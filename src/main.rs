@@ -7,6 +7,7 @@ mod cli;
 mod data;
 mod server;
 mod store;
+mod module;
 
 use server::Rpc;
 

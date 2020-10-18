@@ -12,7 +12,10 @@ path = "src/main.rs"
 jsonrpc-core = "15.0"
 jsonrpc-http-server = "15.0"
 jsonrpc-derive = "15.0"
-# merk = "1.0.0"
+prost-types = "0.6.1"
+
+
+ibc = { git = "https://github.com/informalsystems/ibc-rs" }
 
 # TODO: import this properly
 tendermint = { git = "https://github.com/CharlyCst/tendermint-rs" }

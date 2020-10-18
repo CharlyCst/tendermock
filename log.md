@@ -27,4 +27,20 @@ To resolve:
 - tendermint-rpc is build for client support, but does not expose request internal values (nedded to implement a server)
 - How to handle the 'height' param in queries?
 
+### October 12
 
+- Fixed issue while communicating with relayer-cli.
+
+### October 16
+
+- Refactor store, use a simple nested hashmap for now.
+- Refactor server to give it access to the shared store.
+- Change dependencies to tendermint-rs master branch (after merge that exposes requests types).
+- Started implementing `ClientReader` and `ClientKeeper` traits.
+
+### October 18
+
+- Working on `ClientReader` and `ClientKeeper` traits.
+
+_Questions_:
+- How to serialize values stored? For instance I can't find how to serialize `ClientType`, but an universal serialization is needed because of ABCI queries.

@@ -1,4 +1,3 @@
-//use merk;
 use std::collections::HashMap;
 
 pub trait Storage {
@@ -42,38 +41,6 @@ impl Storage for InMemoryStore {
         Some(())
     }
 }
-
-/*
- * This merk store implementation does not yet support versionning.
- *
-
-pub struct MerkStore {
-    store: merk::Merk,
-}
-
-impl MerkStore {
-    pub fn new() -> Self {
-        let store = merk::Merk::open("tendermock.db").unwrap();
-        MerkStore { store }
-    }
-}
-
-impl Storage for MerkStore {
-    fn set(&mut self, path: Vec<u8>, value: Vec<u8>) {
-        self.store
-            .apply(&[(path, merk::Op::Put(value))], &[])
-            .unwrap();
-    }
-
-    fn get(&mut self, path: &[u8]) -> Option<Vec<u8>> {
-        self.store.get(path).unwrap()
-    }
-
-    fn delete(&mut self, path: Vec<u8>) {
-        self.store.apply(&[(path, merk::Op::Delete)], &[]).unwrap();
-    }
-}
-*/
 
 #[cfg(test)]
 mod tests {
