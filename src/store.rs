@@ -3,9 +3,7 @@ use std::collections::HashMap;
 pub trait Storage {
     /// Return None if there is no block matching `height`.
     fn set(&mut self, height: u64, path: Vec<u8>, value: Vec<u8>) -> Option<()>;
-
     fn get(&self, height: u64, path: &[u8]) -> Option<&[u8]>;
-
     /// Return None is there is no block matchin `height`;
     fn delete(&mut self, height: u64, path: &[u8]) -> Option<()>;
 }

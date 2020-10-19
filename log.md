@@ -44,3 +44,9 @@ To resolve:
 
 _Questions_:
 - How to serialize values stored? For instance I can't find how to serialize `ClientType`, but an universal serialization is needed because of ABCI queries.
+- How to create a raw `Any` type? Where are the urls?
+- How to import tendermint properly?
+
+### October 19
+
+- Updated dependencies to tendermint v0.17.0-rc.
