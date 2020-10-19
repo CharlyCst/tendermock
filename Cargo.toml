@@ -13,9 +13,10 @@ jsonrpc-core = "15.0"
 jsonrpc-http-server = "15.0"
 jsonrpc-derive = "15.0"
 prost-types = "0.6.1"
-
+prost = "0.6.1"
 
 ibc = { git = "https://github.com/informalsystems/ibc-rs" }
+ibc-proto = { git = "https://github.com/informalsystems/ibc-rs" }
 
 # TODO: import this properly
 tendermint = { git = "https://github.com/informalsystems/tendermint-rs", tag = "v0.17.0-rc1"  }

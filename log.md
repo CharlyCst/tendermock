@@ -50,3 +50,16 @@ _Questions_:
 ### October 19
 
 - Updated dependencies to tendermint v0.17.0-rc.
+- Finished client related traits + add unit testing.
+
+_Other_:
+- I'm having trouble with package versionning, that is due to the fact that I need to use the git version of Tendermint (I depend on the test crate with is not on crate.io), AND ibc which use the crate.io version.
+
+
+_What do we need from blocks?_:
+- Header
+- Validator set
+
+Remarks:
+
+- ConnectionKeeper function `store_connection` takes a `&ConnectionEnd`, but for ClientKeeper values stored are owned.

@@ -1671,9 +1671,11 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "ibc",
+ "ibc-proto",
  "jsonrpc-core",
  "jsonrpc-derive",
  "jsonrpc-http-server",
+ "prost",
  "prost-types",
  "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
  "tendermint-proto 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
