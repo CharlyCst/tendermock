@@ -1,7 +1,7 @@
-use std::sync::Mutex;
-use tendermint::block::Height;
 use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
 use jsonrpc_derive::rpc;
+use std::sync::Mutex;
+use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
     abci_query::Request as AbciQueryRequest, abci_query::Response as AbciQueryResponse,
@@ -9,9 +9,9 @@ use tendermint_rpc::endpoint::{
     validators::Request as ValidatorsRequest, validators::Response as ValidatorResponse,
 };
 
-use crate::store;
-use crate::blocks;
 use crate::abci;
+use crate::blocks;
+use crate::store;
 
 #[rpc(server)]
 pub trait Rpc {

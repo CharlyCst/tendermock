@@ -5,9 +5,11 @@ mod abci;
 mod blocks;
 mod cli;
 mod data;
+mod module;
+mod node;
 mod server;
 mod store;
-mod module;
+mod test_node;
 
 use server::Rpc;
 
