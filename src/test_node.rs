@@ -15,10 +15,7 @@ mod tests {
     #[test]
     fn client() {
         let mut node = Node::new();
-        let height = Height {
-            version_number: 0,
-            version_height: 0,
-        };
+        let height = Height::new(1, 1);
         let client_id = ClientId::from_str("UncleScrooge").unwrap();
         let client_state = dummy_client_state();
         let consensus_state = dummy_consensus_state();
@@ -54,10 +51,7 @@ mod tests {
 
     fn dummy_client_state() -> AnyClientState {
         let duration = std::time::Duration::new(60, 0);
-        let height = Height {
-            version_height: 0,
-            version_number: 0,
-        };
+        let height = Height::new(1, 1);
         let client_state = ClientState {
             chain_id: String::from("test_chain"),
             trusting_period: duration.clone(),

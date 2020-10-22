@@ -5,6 +5,7 @@ mod abci;
 mod blocks;
 mod cli;
 mod data;
+mod init;
 mod module;
 mod node;
 mod server;
@@ -15,7 +16,8 @@ use server::Rpc;
 
 fn main() {
     let args = cli::get_args();
-    let node = node::Node::new();
+    let mut node = node::Node::new();
+    init::init(&mut node);
     let server = server::Server::new(args.verbose, node);
     let mut io = IoHandler::new();
     io.extend_with(server.to_delegate());
