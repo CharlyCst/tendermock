@@ -29,6 +29,12 @@ impl Node<InMemoryStore> {
     }
 }
 
+impl<S: Storage> Node<S> {
+    pub fn get_store(&self) -> &S {
+        &self.provable_store
+    }
+}
+
 impl<S: Storage> ClientReader for Node<S> {
     fn client_type(&self, client_id: &ClientId) -> Option<ClientType> {
         let path = format!("clients/{}/clientType", client_id.as_str());

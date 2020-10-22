@@ -15,8 +15,8 @@ use server::Rpc;
 
 fn main() {
     let args = cli::get_args();
-    let store = store::InMemoryStore::new();
-    let server = server::Server::new(args.verbose, store);
+    let node = node::Node::new();
+    let server = server::Server::new(args.verbose, node);
     let mut io = IoHandler::new();
     io.extend_with(server.to_delegate());
 

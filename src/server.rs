@@ -1,6 +1,5 @@
 use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
 use jsonrpc_derive::rpc;
-use std::sync::Mutex;
 use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
@@ -11,6 +10,7 @@ use tendermint_rpc::endpoint::{
 
 use crate::abci;
 use crate::blocks;
+use crate::node;
 use crate::store;
 
 #[rpc(server)]
@@ -26,18 +26,20 @@ pub trait Rpc {
 
     #[rpc(name = "abci_query", params = "raw")]
     fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse>;
+
+    #[rpc(name = "broadcast_tx_commit", params = "raw")]
+    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<()>;
 }
 
 /// A JsonRPC server.
 pub struct Server<S: store::Storage> {
     verbose: bool,
-    store: Mutex<S>,
+    node: node::Node<S>,
 }
 
 impl<S: store::Storage> Server<S> {
-    pub fn new(verbose: bool, store: S) -> Self {
-        let store = Mutex::new(store);
-        Server { verbose, store }
+    pub fn new(verbose: bool, node: node::Node<S>) -> Self {
+        Server { verbose, node }
     }
 }
 
@@ -88,11 +90,15 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
         if self.verbose {
             println!("JsonRPC /abci_query {:?}", req);
         }
-        let store = self.store.lock().unwrap();
         let abci_query_response = AbciQueryResponse {
-            response: abci::handle_query(req, &*store),
+            response: abci::handle_query(req, &self.node),
         };
         Ok(abci_query_response)
+    }
+
+    /// JsonRPC /broadcast_tx_commit endpoint.
+    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<()> {
+        unimplemented!();
     }
 }
 

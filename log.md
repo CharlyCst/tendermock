@@ -63,3 +63,14 @@ _What do we need from blocks?_:
 Remarks:
 
 - ConnectionKeeper function `store_connection` takes a `&ConnectionEnd`, but for ClientKeeper values stored are owned.
+
+### October 21
+
+- Introduce Node struct, that holds both a private and provable store + a chain.
+- Migrate Keeper implementations from Store to Node.
+
+### October 22
+
+- Done with refactoring
+- Used interior mutability to allow concurrent use of `Node` by the RPC server.
+- Added the `boradcast_tx_commit` endpoint, but without implementation (blocked by ICS26Enveloppe which is not serializable).
