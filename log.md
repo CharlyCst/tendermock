@@ -74,3 +74,11 @@ Remarks:
 - Done with refactoring
 - Used interior mutability to allow concurrent use of `Node` by the RPC server.
 - Added the `boradcast_tx_commit` endpoint, but without implementation (blocked by ICS26Enveloppe which is not serializable).
+
+### October 23
+
+- Added initialization of node store.
+- Implementing Connections Keeper and Reader
+
+Questions:
+- Is there a protobuf type for Connections? I'm serialyzing a Json list for now...

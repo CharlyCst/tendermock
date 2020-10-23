@@ -37,8 +37,8 @@ pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> Abci
             key: query.data,
             value: item.to_vec(),
             proof: None,
-            height: block::Height::from(1 as u32),
-            codespace: "codespace".to_string(),
+            height: block::Height::from(height as u32),
+            codespace: "".to_string(),
         }
     } else {
         AbciQuery {
@@ -49,8 +49,8 @@ pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> Abci
             key: query.data,
             value: vec![],
             proof: None,
-            height: block::Height::from(1 as u32),
-            codespace: "codespace".to_string(),
+            height: block::Height::from(height as u32),
+            codespace: "".to_string(),
         }
     }
 }

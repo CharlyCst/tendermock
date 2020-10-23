@@ -1,10 +1,10 @@
 {
-	"jsonrpc": "2.0",
-	"id": "ccc84631-dfdb-4adc-b88c-5291ea3c2cfb",
-	"method": "abci_query",
-	"params": {
-		"path": "store/ibc/key",
-		"data": "faceb00c",
-		"prove": false
-	}
+    "jsonrpc": "2.0",
+    "id": "ccc84631-dfdb-4adc-b88c-5291ea3c2cfb",
+    "method": "abci_query",
+    "params": {
+        "path": "store/ibc/key",
+        "data": "636c69656e74732f666c696e7468656172742f636c69656e745374617465",
+        "prove": false
+    }
 }

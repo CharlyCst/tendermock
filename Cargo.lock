@@ -1677,6 +1677,7 @@ dependencies = [
  "jsonrpc-http-server",
  "prost",
  "prost-types",
+ "serde",
  "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
  "tendermint-proto 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
  "tendermint-rpc 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",

@@ -1,16 +1,22 @@
 use ibc::ics02_client::client_def::AnyClientState;
+use ibc::ics02_client::client_type::ClientType;
 use ibc::ics02_client::context::ClientKeeper;
 use ibc::ics07_tendermint::client_state::ClientState;
 use ibc::ics24_host::identifier::ClientId;
 use ibc::Height;
 use std::str::FromStr;
 
-const CLIENT_ID: &'static str = "glomgold_chain";
+const CLIENT_ID: &'static str = "flintheart";
 
 pub fn init<T: ClientKeeper>(keeper: &mut T) {
     let client_id = ClientId::from_str(CLIENT_ID).unwrap();
     let client_state = new_client_state(CLIENT_ID);
-    keeper.store_client_state(client_id, client_state).unwrap();
+    keeper
+        .store_client_state(client_id.clone(), client_state)
+        .unwrap();
+    keeper
+        .store_client_type(client_id, ClientType::Tendermint)
+        .unwrap();
 }
 
 fn new_client_state(chain_id: &str) -> AnyClientState {
