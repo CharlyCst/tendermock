@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
 
-/// A concurrent on chain storage using interior mutability.
+/// A concurrent, on chain storage using interior mutability.
 pub trait Storage {
     /// Return None if there is no block matching `height`.
     fn set(&self, height: u64, path: Vec<u8>, value: Vec<u8>) -> Option<()>;

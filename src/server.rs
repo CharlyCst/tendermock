@@ -1,5 +1,7 @@
+// use ibc::ics26_routing::handler::deliver_tx;
 use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
 use jsonrpc_derive::rpc;
+use std::sync::RwLock;
 use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
@@ -34,11 +36,12 @@ pub trait Rpc {
 /// A JsonRPC server.
 pub struct Server<S: store::Storage> {
     verbose: bool,
-    node: node::Node<S>,
+    node: RwLock<node::Node<S>>,
 }
 
 impl<S: store::Storage> Server<S> {
     pub fn new(verbose: bool, node: node::Node<S>) -> Self {
+        let node = RwLock::new(node);
         Server { verbose, node }
     }
 }
@@ -90,15 +93,18 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
         if self.verbose {
             println!("JsonRPC /abci_query {:?}", req);
         }
+        let node = self.node.read().unwrap();
         let abci_query_response = AbciQueryResponse {
-            response: abci::handle_query(req, &self.node),
+            response: abci::handle_query(req, &node),
         };
         Ok(abci_query_response)
     }
 
     /// JsonRPC /broadcast_tx_commit endpoint.
-    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<()> {
-        unimplemented!();
+    fn broadcast_tx_commit(&self, _req: Params) -> JsonResult<()> {
+        // TODO
+        let _node = self.node.write().unwrap();
+        Ok(())
     }
 }
 

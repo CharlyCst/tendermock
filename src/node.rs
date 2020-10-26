@@ -73,7 +73,7 @@ impl<S: Storage> ClientReader for Node<S> {
 
     fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {
         let path = format!("clients/{}/clientState", client_id.as_str());
-        let value = self.store.get(0, path.as_bytes())?.to_owned();
+        let value = self.store.get(0, path.as_bytes())?;
         let client_state = Any {
             type_url: String::from(CLIENT_STATE_URL),
             value,
@@ -87,7 +87,7 @@ impl<S: Storage> ClientReader for Node<S> {
             client_id.as_str(),
             height.to_string()
         );
-        let value = self.store.get(0, path.as_bytes())?.to_owned();
+        let value = self.store.get(0, path.as_bytes())?;
         let consensus_state = Any {
             type_url: String::from(CONSENSUS_STATE_URL),
             value,
@@ -174,7 +174,14 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
 }
 
 impl<S: Storage> ConnectionReader for Node<S> {
-    fn connection_end(&self, conn_id: &ConnectionId) -> Option<&ConnectionEnd> {
+    fn connection_end(&self, connection_id: &ConnectionId) -> Option<&ConnectionEnd> {
+        let path = format!("connections/{}", connection_id.as_str());
+        let value = self.store.get(0, path.as_bytes())?;
+        let _any = Any {
+            type_url: String::from(CLIENT_STATE_URL),
+            value,
+        };
+        /*let raw = RawConnectionEnd::try_from(any).ok()?;*/
         unimplemented!()
     }
 
