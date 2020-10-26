@@ -82,3 +82,7 @@ Remarks:
 
 Questions:
 - Is there a protobuf type for Connections? I'm serialyzing a Json list for now...
+
+### October 26
+
+- Implementing ConnectionReader for Node.

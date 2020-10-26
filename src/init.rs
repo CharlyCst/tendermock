@@ -6,11 +6,9 @@ use ibc::ics24_host::identifier::ClientId;
 use ibc::Height;
 use std::str::FromStr;
 
-const CLIENT_ID: &'static str = "flintheart";
-
-pub fn init<T: ClientKeeper>(keeper: &mut T) {
-    let client_id = ClientId::from_str(CLIENT_ID).unwrap();
-    let client_state = new_client_state(CLIENT_ID);
+pub fn init<T: ClientKeeper>(keeper: &mut T, id: &str) {
+    let client_id = ClientId::from_str(id).unwrap();
+    let client_state = new_client_state(id);
     keeper
         .store_client_state(client_id.clone(), client_state)
         .unwrap();

@@ -6,6 +6,7 @@ use ibc::ics02_client::error::Error as ClientError;
 use ibc::ics03_connection::connection::ConnectionEnd;
 use ibc::ics03_connection::context::{ConnectionKeeper, ConnectionReader};
 use ibc::ics03_connection::error::Error as ConnectionError;
+use ibc::ics23_commitment::commitment::CommitmentPrefix;
 use ibc::ics24_host::identifier::{ClientId, ConnectionId};
 use ibc::Height;
 use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
@@ -19,6 +20,9 @@ use std::str::FromStr;
 // protobuf URL
 const CONSENSUS_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ConsensusState";
 const CLIENT_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ClientState";
+
+// System constant
+const COMMITMENT_PREFIX: &'static str = "store/ibc/key";
 
 /// A type representing connections in memory
 #[derive(Serialize, Deserialize)]
@@ -37,13 +41,15 @@ impl Connections {
 pub struct Node<S: Storage> {
     store: S,
     chain: Vec<bool>, // TODO: use light blocks.
+    id: String,
 }
 
 impl Node<InMemoryStore> {
-    pub fn new() -> Self {
+    pub fn new(id: String) -> Self {
         Node {
             store: InMemoryStore::new(),
             chain: vec![],
+            id,
         }
     }
 }
@@ -164,5 +170,54 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
         self.get_store()
             .set(0, path.into_bytes(), connection_id.as_bytes().to_owned());
         Ok(())
+    }
+}
+
+impl<S: Storage> ConnectionReader for Node<S> {
+    fn connection_end(&self, conn_id: &ConnectionId) -> Option<&ConnectionEnd> {
+        unimplemented!()
+    }
+
+    fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {
+        <Node<S> as ClientReader>::client_state(self, client_id)
+    }
+
+    fn host_current_height(&self) -> Height {
+        Height::new(1, self.chain.len() as u64)
+    }
+
+    fn host_chain_history_size(&self) -> usize {
+        // TODO
+        0
+    }
+
+    fn commitment_prefix(&self) -> CommitmentPrefix {
+        CommitmentPrefix::from(COMMITMENT_PREFIX.as_bytes().to_owned())
+    }
+
+    fn client_consensus_state(
+        &self,
+        client_id: &ClientId,
+        height: Height,
+    ) -> Option<AnyConsensusState> {
+        self.consensus_state(client_id, height)
+    }
+
+    fn host_consensus_state(&self, height: Height) -> Option<AnyConsensusState> {
+        let host_id = ClientId::from_str(&self.id).unwrap();
+        self.consensus_state(&host_id, height)
+    }
+
+    // TODO: what is the correct version format?
+    fn get_compatible_versions(&self) -> Vec<String> {
+        vec![String::from("0.0.1")]
+    }
+
+    // TODO: what if there is no compatible versions?
+    fn pick_version(&self, counterparty_candidate_versions: Vec<String>) -> String {
+        match counterparty_candidate_versions.get(0) {
+            Some(version) => version.to_owned(),
+            None => String::from("0.0.1"),
+        }
     }
 }

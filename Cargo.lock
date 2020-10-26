@@ -693,8 +693,8 @@ dependencies = [
 
 [[package]]
 name = "ibc"
-version = "0.0.3"
-source = "git+https://github.com/informalsystems/ibc-rs#750a87b3ede6fde284bc45c5655b75e231735059"
+version = "0.0.4"
+source = "git+https://github.com/informalsystems/ibc-rs#bcbefaaada4b6ce87b23abed99c5f97904ede3cf"
 dependencies = [
  "anomaly",
  "bytes 0.5.6",
@@ -717,7 +717,7 @@ dependencies = [
 [[package]]
 name = "ibc-proto"
 version = "0.4.0"
-source = "git+https://github.com/informalsystems/ibc-rs#750a87b3ede6fde284bc45c5655b75e231735059"
+source = "git+https://github.com/informalsystems/ibc-rs#bcbefaaada4b6ce87b23abed99c5f97904ede3cf"
 dependencies = [
  "anomaly",
  "bytes 0.5.6",
