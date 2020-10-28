@@ -1,4 +1,5 @@
 use crate::store::{InMemoryStore, Storage};
+use crate::chain::Chain;
 use ibc::ics02_client::client_def::{AnyClientState, AnyConsensusState};
 use ibc::ics02_client::client_type::ClientType;
 use ibc::ics02_client::context::{ClientKeeper, ClientReader};
@@ -40,7 +41,7 @@ impl Connections {
 
 pub struct Node<S: Storage> {
     store: S,
-    chain: Vec<bool>, // TODO: use light blocks.
+    chain: Chain,
     id: String,
 }
 
@@ -48,7 +49,7 @@ impl Node<InMemoryStore> {
     pub fn new(id: String) -> Self {
         Node {
             store: InMemoryStore::new(),
-            chain: vec![],
+            chain: Chain::new(),
             id,
         }
     }
@@ -57,6 +58,10 @@ impl Node<InMemoryStore> {
 impl<S: Storage> Node<S> {
     pub fn get_store(&self) -> &S {
         &self.store
+    }
+
+    pub fn get_chain(&self) -> &Chain {
+        &self.chain
     }
 }
 
@@ -176,13 +181,9 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
 impl<S: Storage> ConnectionReader for Node<S> {
     fn connection_end(&self, connection_id: &ConnectionId) -> Option<&ConnectionEnd> {
         let path = format!("connections/{}", connection_id.as_str());
-        let value = self.store.get(0, path.as_bytes())?;
-        let _any = Any {
-            type_url: String::from(CLIENT_STATE_URL),
-            value,
-        };
-        /*let raw = RawConnectionEnd::try_from(any).ok()?;*/
-        unimplemented!()
+        let _value = self.store.get(0, path.as_bytes())?;
+        unimplemented!();
+        // ConnectionEnd::decode_vec(&value)?;
     }
 
     fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {
@@ -190,12 +191,11 @@ impl<S: Storage> ConnectionReader for Node<S> {
     }
 
     fn host_current_height(&self) -> Height {
-        Height::new(1, self.chain.len() as u64)
+        self.chain.get_height()
     }
 
     fn host_chain_history_size(&self) -> usize {
-        // TODO
-        0
+        100
     }
 
     fn commitment_prefix(&self) -> CommitmentPrefix {

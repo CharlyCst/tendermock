@@ -86,3 +86,8 @@ Questions:
 ### October 26
 
 - Implementing ConnectionReader for Node.
+
+### October 28
+
+- Upgraded dependencies (to acces new `ligh_block` utilities).
+- Created a Chain struct that manage blocks.

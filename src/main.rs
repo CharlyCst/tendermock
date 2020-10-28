@@ -2,15 +2,14 @@ use jsonrpc_core::IoHandler;
 use jsonrpc_http_server::ServerBuilder;
 
 mod abci;
-mod blocks;
 mod cli;
 mod data;
 mod init;
-mod module;
 mod node;
 mod server;
 mod store;
 mod test_node;
+mod chain;
 
 use server::Rpc;
 

@@ -11,7 +11,6 @@ use tendermint_rpc::endpoint::{
 };
 
 use crate::abci;
-use crate::blocks;
 use crate::node;
 use crate::store;
 
@@ -53,7 +52,16 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
         if self.verbose {
             println!("JsonRPC /commit     {:?}", req);
         }
-        let signed_header = blocks::_get_signed_header();
+        let height = match req.height {
+            None => 0,
+            Some(height) => height.into(),
+        };
+        let node = self.node.read().unwrap();
+        let block = node
+            .get_chain()
+            .get_block(height)
+            .ok_or_else(|| JsonError::invalid_request())?;
+        let signed_header = block.signed_header;
         let commit_response = CommitResponse {
             signed_header,
             canonical: false,
@@ -67,7 +75,12 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
         if self.verbose {
             println!("JsonRPC /validators {:?}", req);
         }
-        let validators = blocks::_get_validators();
+        let node = self.node.read().unwrap();
+        let block = node
+            .get_chain()
+            .get_block(req.height.into())
+            .ok_or_else(|| JsonError::invalid_request())?;
+        let validators = block.validators.validators().clone();
         let validators_responde = ValidatorResponse {
             block_height: Height::from(1 as u32),
             validators,

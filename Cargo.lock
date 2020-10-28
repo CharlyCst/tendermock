@@ -1548,7 +1548,7 @@ dependencies = [
 [[package]]
 name = "tendermint"
 version = "0.17.0-rc1"
-source = "git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1#80fb191e398e32eec88d22cd2c4e807ea27a3d0b"
+source = "git+https://github.com/informalsystems/tendermint-rs#34a23860f62d3ad87d3b335fda1a99ba169181e8"
 dependencies = [
  "anomaly",
  "async-trait",
@@ -1568,7 +1568,7 @@ dependencies = [
  "signature",
  "subtle",
  "subtle-encoding",
- "tendermint-proto 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
+ "tendermint-proto 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs)",
  "thiserror",
  "toml",
  "zeroize",
@@ -1603,7 +1603,7 @@ dependencies = [
 [[package]]
 name = "tendermint-proto"
 version = "0.17.0-rc1"
-source = "git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1#80fb191e398e32eec88d22cd2c4e807ea27a3d0b"
+source = "git+https://github.com/informalsystems/tendermint-rs#34a23860f62d3ad87d3b335fda1a99ba169181e8"
 dependencies = [
  "anomaly",
  "bytes 0.5.6",
@@ -1638,7 +1638,7 @@ dependencies = [
 [[package]]
 name = "tendermint-rpc"
 version = "0.17.0-rc1"
-source = "git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1#80fb191e398e32eec88d22cd2c4e807ea27a3d0b"
+source = "git+https://github.com/informalsystems/tendermint-rs#34a23860f62d3ad87d3b335fda1a99ba169181e8"
 dependencies = [
  "bytes 0.5.6",
  "chrono",
@@ -1646,7 +1646,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_json",
- "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
+ "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs)",
  "thiserror",
  "uuid",
 ]
@@ -1654,7 +1654,7 @@ dependencies = [
 [[package]]
 name = "tendermint-testgen"
 version = "0.17.0-rc1"
-source = "git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1#80fb191e398e32eec88d22cd2c4e807ea27a3d0b"
+source = "git+https://github.com/informalsystems/tendermint-rs#34a23860f62d3ad87d3b335fda1a99ba169181e8"
 dependencies = [
  "ed25519-dalek",
  "gumdrop",
@@ -1662,7 +1662,7 @@ dependencies = [
  "serde_json",
  "simple-error",
  "tempfile",
- "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
+ "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs)",
 ]
 
 [[package]]
@@ -1678,9 +1678,9 @@ dependencies = [
  "prost",
  "prost-types",
  "serde",
- "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
- "tendermint-proto 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
- "tendermint-rpc 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs?tag=v0.17.0-rc1)",
+ "tendermint 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs)",
+ "tendermint-proto 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs)",
+ "tendermint-rpc 0.17.0-rc1 (git+https://github.com/informalsystems/tendermint-rs)",
  "tendermint-testgen",
 ]
 

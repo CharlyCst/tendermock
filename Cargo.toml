@@ -20,10 +20,10 @@ ibc = { git = "https://github.com/informalsystems/ibc-rs" }
 ibc-proto = { git = "https://github.com/informalsystems/ibc-rs" }
 
 # TODO: import this properly
-tendermint = { git = "https://github.com/informalsystems/tendermint-rs", tag = "v0.17.0-rc1"  }
-tendermint-testgen = { git = "https://github.com/informalsystems/tendermint-rs", tag = "v0.17.0-rc1" }
-tendermint-rpc = { git  = "https://github.com/informalsystems/tendermint-rs", tag = "v0.17.0-rc1" }
-tendermint-proto = { git = "https://github.com/informalsystems/tendermint-rs", tag = "v0.17.0-rc1" }
+tendermint = { git = "https://github.com/informalsystems/tendermint-rs" }
+tendermint-testgen = { git = "https://github.com/informalsystems/tendermint-rs" }
+tendermint-rpc = { git  = "https://github.com/informalsystems/tendermint-rs" }
+tendermint-proto = { git = "https://github.com/informalsystems/tendermint-rs" }
 
 [dependencies.clap]
 version = "3.0.0-beta.1"
