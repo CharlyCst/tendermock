@@ -1,4 +1,4 @@
-// use ibc::ics26_routing::handler::deliver_tx;
+use ibc::ics26_routing::handler::deliver_tx;
 use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
 use jsonrpc_derive::rpc;
 use std::sync::RwLock;
@@ -6,16 +6,23 @@ use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
     abci_query::Request as AbciQueryRequest, abci_query::Response as AbciQueryResponse,
-    commit::Request as CommitRequest, commit::Response as CommitResponse,
-    validators::Request as ValidatorsRequest, validators::Response as ValidatorResponse,
+    block::Request as BlockRequest, block::Response as BlockResponse,
+    broadcast::tx_commit::Request as BroadcastTxCommitRequest,
+    broadcast::tx_commit::Response as BroadcastTxCommitResponse, commit::Request as CommitRequest,
+    commit::Response as CommitResponse, validators::Request as ValidatorsRequest,
+    validators::Response as ValidatorResponse,
 };
 
 use crate::abci;
 use crate::node;
 use crate::store;
+use crate::chain::to_full_block;
 
 #[rpc(server)]
 pub trait Rpc {
+    #[rpc(name = "block", params = "raw")]
+    fn block(&self, req: Params) -> JsonResult<BlockResponse>;
+
     #[rpc(name = "commit", params = "raw")]
     fn commit(&self, req: Params) -> JsonResult<CommitResponse>;
 
@@ -29,7 +36,7 @@ pub trait Rpc {
     fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse>;
 
     #[rpc(name = "broadcast_tx_commit", params = "raw")]
-    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<()>;
+    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse>;
 }
 
 /// A JsonRPC server.
@@ -46,6 +53,29 @@ impl<S: store::Storage> Server<S> {
 }
 
 impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
+    /// JsonRPC /block endpoint.
+    fn block(&self, req: Params) -> JsonResult<BlockResponse> {
+        let req: BlockRequest = parse(req)?;
+        if self.verbose {
+            println!("JsonRPC /block      {:?}", req);
+        }
+        let height = match req.height {
+            None => 0,
+            Some(height) => height.into(),
+        };
+        let node = self.node.read().unwrap();
+        let block = node
+            .get_chain()
+            .get_block(height)
+            .ok_or_else(|| JsonError::invalid_request())?;
+        let tm_block = to_full_block(block);
+        let block_response  = BlockResponse {
+            block_id: todo!(),
+            block: tm_block,
+        };
+        Ok(block_response)
+    }
+
     /// JsonRPC /commit endpoint.
     fn commit(&self, req: Params) -> JsonResult<CommitResponse> {
         let req: CommitRequest = parse(req)?;
@@ -114,10 +144,11 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     }
 
     /// JsonRPC /broadcast_tx_commit endpoint.
-    fn broadcast_tx_commit(&self, _req: Params) -> JsonResult<()> {
-        // TODO
-        let _node = self.node.write().unwrap();
-        Ok(())
+    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse> {
+        let _req: BroadcastTxCommitRequest = parse(req)?;
+        let node = self.node.write().unwrap();
+        node.get_chain().grow();
+        todo!();
     }
 }
 

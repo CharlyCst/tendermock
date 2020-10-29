@@ -1,5 +1,5 @@
-use crate::store::{InMemoryStore, Storage};
 use crate::chain::Chain;
+use crate::store::{InMemoryStore, Storage};
 use ibc::ics02_client::client_def::{AnyClientState, AnyConsensusState};
 use ibc::ics02_client::client_type::ClientType;
 use ibc::ics02_client::context::{ClientKeeper, ClientReader};
@@ -181,9 +181,11 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
 impl<S: Storage> ConnectionReader for Node<S> {
     fn connection_end(&self, connection_id: &ConnectionId) -> Option<&ConnectionEnd> {
         let path = format!("connections/{}", connection_id.as_str());
-        let _value = self.store.get(0, path.as_bytes())?;
+        let value = self.store.get(0, path.as_bytes())?;
+        let raw = RawConnectionEnd::decode(&*value).ok()?;
+        let _connection_end = ConnectionEnd::try_from(raw).ok()?;
         unimplemented!();
-        // ConnectionEnd::decode_vec(&value)?;
+        //Some(std::rc::Rc::new(connection_end))
     }
 
     fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {

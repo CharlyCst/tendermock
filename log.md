@@ -91,3 +91,12 @@ Questions:
 
 - Upgraded dependencies (to acces new `ligh_block` utilities).
 - Created a Chain struct that manage blocks.
+- Return valid block info though JsonRPC.
+
+### October 29
+
+- Created an issue on ibc-rs for the ConnectionEnd return type issue (it returns a reference).
+- Added block endpoint
+
+**Questions**:
+- Should we include transaction content inside `/block` response?
