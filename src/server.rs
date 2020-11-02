@@ -1,4 +1,4 @@
-use ibc::ics26_routing::handler::deliver_tx;
+// use ibc::ics26_routing::handler::deliver_tx;
 use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
 use jsonrpc_derive::rpc;
 use std::sync::RwLock;
@@ -69,8 +69,12 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             .get_block(height)
             .ok_or_else(|| JsonError::invalid_request())?;
         let tm_block = to_full_block(block);
+        let hash = tm_block.header.hash();
         let block_response  = BlockResponse {
-            block_id: todo!(),
+            block_id: tendermint::block::Id {
+                part_set_header: tendermint::block::parts::Header::new(1, hash.clone()),
+                hash,
+            },
             block: tm_block,
         };
         Ok(block_response)

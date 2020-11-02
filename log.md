@@ -8,7 +8,7 @@ Successfully runned a light-node against the mocked Tendermint node:
 
 - For now the blochain only has a single block.
 - I had to use the default configuration of the light node, otherwise a missing witnesses error is sent. The config defines a trust threshold, that is probably why it fixed the issue.
-- Work on the JsonRPC interface will be posed until the testgen lightblocks generation is availlable.
+- Work on the JsonRPC interface will be posed until the testgen lightblocks generation is available.
 
 **Next task**: Have the `abci` interface up and running.
 
@@ -100,3 +100,27 @@ Questions:
 
 **Questions**:
 - Should we include transaction content inside `/block` response?
+
+### November 2
+
+**What do we need for each endpoint?**:
+
+- `/block`:
+  - `block::Id`:
+    - `Hash`: blocks main hash (root of merkle tree for all fields in the block header)
+    - `Option<Header>`: parts header (if available), the merkle root of all parts of the serialized blocks.
+  - `Block`:
+    - `Header`
+    - `Data`: transaction data
+    - `Data`: evidence of malfeasance
+    - `Option<Commit>`: last commit
+- `/blockchain`:
+  - `Height`: last height for this chain
+  - `Vec<Meta>`: a list of block metadata
+    - `block::Id`
+    - `Header`
+- `/consensus_state`: not available in `tendermint_rpc` but can be obtained through `/abci_query`.
+
+We do have the block `Header` in `TMLightBlock`, which can be hashed: does thi correspond to the Hash in block ID?
+
+How do we get the hash of the parts?
