@@ -124,3 +124,13 @@ Questions:
 We do have the block `Header` in `TMLightBlock`, which can be hashed: does thi correspond to the Hash in block ID?
 
 How do we get the hash of the parts?
+
+**Next tasks**:
+- Initialize the node
+  - see ibc-rs/ci/(simapp/config)
+- Look into hashes (use an existing library if possible, otherwise look into the algorithm).
+  - https://github.com/confio/ics23
+
+### November 7
+
+- Enable passing custom config from JSON format

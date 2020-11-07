@@ -1,0 +1,26 @@
+{
+  "snapshots": [
+    {
+      "cmd": "./target/debug/tendermock -p not_a_port",
+      "name": "alpha-character-in-port",
+      "description": "Malformed port argument: contains alphabetic characters.\n#config",
+      "tags": [
+        "config"
+      ],
+      "exit_code": 2,
+      "stdout": null,
+      "stderr": "alpha-character-in-port.err"
+    },
+    {
+      "cmd": "./target/debug/tendermock -c test/malformed_config.json",
+      "name": "unknown-config-field",
+      "description": "Unknown field in config.json are disabled (this avoid bad surprises with typos).\n#config",
+      "tags": [
+        "config"
+      ],
+      "exit_code": 101,
+      "stdout": null,
+      "stderr": "unknown-config-field.err"
+    }
+  ]
+}

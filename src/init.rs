@@ -1,3 +1,4 @@
+use crate::config::{Client, Config};
 use ibc::ics02_client::client_def::AnyClientState;
 use ibc::ics02_client::client_type::ClientType;
 use ibc::ics02_client::context::ClientKeeper;
@@ -6,9 +7,15 @@ use ibc::ics24_host::identifier::ClientId;
 use ibc::Height;
 use std::str::FromStr;
 
-pub fn init<T: ClientKeeper>(keeper: &mut T, id: &str) {
-    let client_id = ClientId::from_str(id).unwrap();
-    let client_state = new_client_state(id);
+pub fn init<T: ClientKeeper>(keeper: &mut T, config: &Config) {
+    for client in &config.clients {
+        add_client(keeper, client, &config.chain_id);
+    }
+}
+
+fn add_client<T: ClientKeeper>(keeper: &mut T, client: &Client, chain_id: &str) {
+    let client_id = ClientId::from_str(&client.id).expect(&format!("Invalid client id: {}", &client.id));
+    let client_state = new_client_state(chain_id);
     keeper
         .store_client_state(client_id.clone(), client_state)
         .unwrap();

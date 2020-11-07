@@ -1,0 +1,2 @@
+thread 'main' panicked at 'Could not parse config file: Error("unknown field `chain__id`, expected `chain_id`", line: 2, column: 15)', src/config.rs:16:35
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

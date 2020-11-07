@@ -12,6 +12,10 @@ pub struct Args {
     /// JsonRPC port
     #[clap(short, long, default_value="26657")]
     pub port: u16,
+
+    /// Path to json configuration file
+    #[clap(short, long)]
+    pub config: Option<String>,
 }
 
 /// Parse CLI args, may terminate the program

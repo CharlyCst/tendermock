@@ -1,0 +1,11 @@
+{
+    "chain_id": "chain_A",
+    "clients": [
+        {
+            "id": "uncle_scrooge"
+        },
+        {
+            "id": "flintheart"
+        }
+    ]
+}
