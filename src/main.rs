@@ -2,6 +2,7 @@ use jsonrpc_core::IoHandler;
 use jsonrpc_http_server::ServerBuilder;
 
 mod abci;
+mod avl;
 mod chain;
 mod cli;
 mod config;
