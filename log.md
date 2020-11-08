@@ -134,3 +134,7 @@ How do we get the hash of the parts?
 ### November 7
 
 - Enable passing custom config from JSON format
+
+### November 8
+
+- Started implementing AVL Tree to be used as storage backend.

@@ -45,6 +45,19 @@ impl<T: Ord> AvlNode<T> {
             None
         }
     }
+
+    fn update_height(&mut self) {
+        match &self.right {
+            None => match &self.left {
+                None => self.height = 0,
+                Some(left) => self.height = left.height + 1,
+            },
+            Some(right) => match &self.left {
+                None => self.height = right.height + 1,
+                Some(left) => self.height = std::cmp::max(left.height, right.height) + 1,
+            },
+        }
+    }
 }
 
 impl<T: Ord> AvlTree<T> {
@@ -57,28 +70,20 @@ impl<T: Ord> AvlTree<T> {
     pub fn insert(&mut self, key: T) {
         let node_ref = &mut self.root;
         AvlTree::insert_rec(node_ref, key);
-        /*
-        let mut node_ref = &mut self.root;
-        while let Some(ref mut node) = node_ref {
-            match node.key.cmp(&key) {
-                Ordering::Greater => node_ref = &mut node.left,
-                Ordering::Less => node_ref = &mut node.right,
-                Ordering::Equal => {
-                    node.key = key;
-                    return;
-                }
-            }
-        }
-        *node_ref = as_node_ref(key);
-        */
     }
 
     /// Insert a value and return the node height.
     fn insert_rec(node_ref: &mut NodeRef<T>, key: T) -> u32 {
         if let Some(node) = node_ref {
             let (left_height, right_height) = match node.key.cmp(&key) {
-                Ordering::Greater => (Some(AvlTree::insert_rec(&mut node.left, key)), node.right_height()),
-                Ordering::Less => (node.left_height(), Some(AvlTree::insert_rec(&mut node.right, key))),
+                Ordering::Greater => (
+                    Some(AvlTree::insert_rec(&mut node.left, key)),
+                    node.right_height(),
+                ),
+                Ordering::Less => (
+                    node.left_height(),
+                    Some(AvlTree::insert_rec(&mut node.right, key)),
+                ),
                 Ordering::Equal => {
                     node.key = key;
                     (node.left_height(), node.right_height())
@@ -98,6 +103,19 @@ impl<T: Ord> AvlTree<T> {
         }
     }
 
+    /// Performs a right rotation.
+    fn rotate_right(root: &mut NodeRef<T>) {
+        let mut node = root.take().expect("[AVL]: Empty root in right rotation");
+        let mut left = node.left.take().expect("[AVL]: Unexpected right rotation");
+        let mut left_right = left.right.take();
+        std::mem::swap(&mut node.left, &mut left_right);
+        node.update_height();
+        std::mem::swap(&mut left.right, &mut Some(node));
+        left.update_height();
+        std::mem::swap(root, &mut Some(left));
+    }
+
+    /// Return the value corresponding to the key, if it exists.
     pub fn get(&self, key: &T) -> Option<()> {
         let mut node_ref = &self.root;
         while let Some(ref node) = node_ref {
@@ -145,5 +163,37 @@ mod tests {
         assert!(tree.get(&2).is_some());
         assert!(tree.get(&5).is_some());
         assert!(tree.get(&4).is_none());
+    }
+
+    #[test]
+    fn rotate_right() {
+        let mut before = AvlTree {
+            root: Some(Box::new(AvlNode {
+                key: 5,
+                height: 2,
+                left: Some(Box::new(AvlNode {
+                    key: 3,
+                    height: 1,
+                    left: as_node_ref(2),
+                    right: as_node_ref(4),
+                })),
+                right: as_node_ref(6),
+            })),
+        };
+        let after = AvlTree {
+            root: Some(Box::new(AvlNode {
+                key: 3,
+                height: 2,
+                left: as_node_ref(2),
+                right: Some(Box::new(AvlNode {
+                    key: 5,
+                    height: 1,
+                    left: as_node_ref(4),
+                    right: as_node_ref(6),
+                })),
+            })),
+        };
+        AvlTree::rotate_right(&mut before.root);
+        assert_eq!(before, after);
     }
 }
