@@ -138,3 +138,7 @@ How do we get the hash of the parts?
 ### November 8
 
 - Started implementing AVL Tree to be used as storage backend.
+
+### November 9
+
+- Done with AVL tree, now I have to merkleize it.
