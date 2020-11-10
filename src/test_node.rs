@@ -13,6 +13,7 @@ mod tests {
     use std::str::FromStr;
 
     #[test]
+    /// Test storage and retrieval of client and consensus states.
     fn client() {
         let id = String::from("flintheart");
         let mut node = Node::new(id);

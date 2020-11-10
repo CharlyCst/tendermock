@@ -142,3 +142,7 @@ How do we get the hash of the parts?
 ### November 9
 
 - Done with AVL tree, now I have to merkleize it.
+
+### November 10
+
+- Node store is now backed by AVL tree instead of a HashMap.
