@@ -1,4 +1,4 @@
-use crate::avl::AvlTree;
+use crate::avl::{AsBytes, AvlTree};
 use std::sync::RwLock;
 
 /// A concurrent, on chain storage using interior mutability.

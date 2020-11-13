@@ -4,8 +4,11 @@ use std::borrow::Borrow;
 use std::cmp::{Ord, Ordering};
 use tendermint::hash::{Algorithm, Hash};
 
+mod as_bytes;
 mod proof;
 mod tests;
+
+pub use as_bytes::AsBytes;
 
 const HASH_ALGO: Algorithm = Algorithm::Sha256;
 
@@ -23,25 +26,28 @@ struct AvlNode<K: Ord, V> {
 }
 
 #[derive(PartialEq, Eq, Debug)]
-pub struct AvlTree<K: Ord, V> {
+pub struct AvlTree<K: Ord + AsBytes, V> {
     root: NodeRef<K, V>,
 }
 
-fn as_node_ref<T: Ord, V>(key: T, value: V) -> NodeRef<T, V>
+fn as_node_ref<K: Ord + AsBytes, V>(key: K, value: V) -> NodeRef<K, V>
 where
     V: Borrow<[u8]>,
 {
     Some(Box::new(AvlNode::new(key, value)))
 }
 
-impl<T: Ord, V> AvlNode<T, V>
+impl<K: Ord + AsBytes, V> AvlNode<K, V>
 where
     V: Borrow<[u8]>,
 {
-    fn new(key: T, value: V) -> Self {
-        let hash = Sha256::digest(value.borrow());
+    fn new(key: K, value: V) -> Self {
+        let mut sha = Sha256::new();
+        sha.update(key.as_bytes());
+        sha.update(value.borrow());
+        let hash = sha.finalize();
+        let merkle_hash = Hash::from_bytes(HASH_ALGO, &Sha256::digest(&hash)).unwrap();
         let hash = Hash::from_bytes(HASH_ALGO, &hash).unwrap();
-        let merkle_hash = hash.clone();
         return AvlNode {
             key,
             value,
@@ -88,22 +94,13 @@ where
     /// Update the node's merkle hash by looking at the hashes of its two children.
     fn update_hashes(&mut self) {
         let mut sha = Sha256::new();
-        match &self.right {
-            None => match &self.left {
-                None => {
-                    self.merkle_hash = self.hash.clone();
-                    return;
-                }
-                Some(left) => sha.update(&left.merkle_hash.as_bytes()),
-            },
-            Some(right) => {
-                if let Some(ref left) = self.left {
-                    sha.update(&left.merkle_hash.as_bytes());
-                }
-                sha.update(&right.merkle_hash.as_bytes());
-            }
+        if let Some(left) = &self.left {
+            sha.update(&left.merkle_hash.as_bytes());
         }
         sha.update(&self.hash.as_bytes());
+        if let Some(right) = &self.right {
+            sha.update(right.merkle_hash.as_bytes())
+        }
         self.merkle_hash = Hash::from_bytes(HASH_ALGO, sha.finalize().as_slice()).unwrap();
     }
 
@@ -125,19 +122,28 @@ where
     }
 }
 
-impl<T: Ord, V> AvlTree<T, V>
+impl<K: Ord + AsBytes, V> AvlTree<K, V>
 where
     V: Borrow<[u8]>,
 {
-    /// Returns an ampty AVL tree.
+    /// Return an ampty AVL tree.
     pub fn new() -> Self {
         AvlTree { root: None }
+    }
+
+    /// Return the hash of the merkle tree root, if it has at least one node.
+    pub fn root_hash(&self) -> Option<&Hash> {
+        if let Some(root) = &self.root {
+            Some(&root.merkle_hash)
+        } else {
+            None
+        }
     }
 
     /// Return the value corresponding to the key, if it exists.
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
     where
-        T: Borrow<Q>,
+        K: Borrow<Q>,
         Q: Ord,
     {
         let mut node_ref = &self.root;
@@ -152,13 +158,13 @@ where
     }
 
     /// Insert a value into the AVL tree, this operation runs in amortized O(log(n)).
-    pub fn insert(&mut self, key: T, value: V) {
+    pub fn insert(&mut self, key: K, value: V) {
         let node_ref = &mut self.root;
         AvlTree::insert_rec(node_ref, key, value);
     }
 
     /// Insert a value and return the node height.
-    fn insert_rec(node_ref: &mut NodeRef<T, V>, key: T, value: V) {
+    fn insert_rec(node_ref: &mut NodeRef<K, V>, key: K, value: V) {
         if let Some(node) = node_ref {
             match node.key.cmp(&key) {
                 Ordering::Greater => AvlTree::insert_rec(&mut node.left, key, value),
@@ -173,7 +179,7 @@ where
     }
 
     /// Rebalance the AVL tree by performing rotations, if needed.
-    fn balance_node(node_ref: &mut NodeRef<T, V>) {
+    fn balance_node(node_ref: &mut NodeRef<K, V>) {
         let node = node_ref
             .as_mut()
             .expect("[AVL]: Empty node in node balance");
@@ -204,7 +210,7 @@ where
     }
 
     /// Performs a right rotation.
-    fn rotate_right(root: &mut NodeRef<T, V>) {
+    fn rotate_right(root: &mut NodeRef<K, V>) {
         let mut node = root.take().expect("[AVL]: Empty root in right rotation");
         let mut left = node.left.take().expect("[AVL]: Unexpected right rotation");
         let mut left_right = left.right.take();
@@ -216,7 +222,7 @@ where
     }
 
     /// Perform a left rotation.
-    fn rotate_left(root: &mut NodeRef<T, V>) {
+    fn rotate_left(root: &mut NodeRef<K, V>) {
         let mut node = root.take().expect("[AVL]: Empty root in left rotation");
         let mut right = node.right.take().expect("[AVL]: Unexpected left rotation");
         let mut right_left = right.left.take();
