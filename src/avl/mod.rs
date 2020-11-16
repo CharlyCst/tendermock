@@ -1,4 +1,6 @@
 /// A simple in-memory AVL tree implementation.
+use ics23::commitment_proof::Proof;
+use ics23::{CommitmentProof, ExistenceProof, HashOp, InnerOp, LeafOp, LengthOp};
 use sha2::{Digest, Sha256};
 use std::borrow::Borrow;
 use std::cmp::{Ord, Ordering};
@@ -9,6 +11,7 @@ mod proof;
 mod tests;
 
 pub use as_bytes::AsBytes;
+pub use proof::get_proof_spec;
 
 const HASH_ALGO: Algorithm = Algorithm::Sha256;
 
@@ -43,6 +46,7 @@ where
 {
     fn new(key: K, value: V) -> Self {
         let mut sha = Sha256::new();
+        sha.update(proof::LEAF_PREFIX);
         sha.update(key.as_bytes());
         sha.update(value.borrow());
         let hash = sha.finalize();
@@ -75,6 +79,16 @@ where
         } else {
             None
         }
+    }
+
+    /// The left merkle hash, if any
+    fn left_hash(&self) -> Option<&[u8]> {
+        Some(&self.left.as_ref()?.merkle_hash.as_bytes())
+    }
+
+    /// The right merkle hash, if any
+    fn right_hash(&self) -> Option<&[u8]> {
+        Some(&self.right.as_ref()?.merkle_hash.as_bytes())
     }
 
     /// Update the hight of the node by looking at the hight of its two children.
@@ -133,11 +147,7 @@ where
 
     /// Return the hash of the merkle tree root, if it has at least one node.
     pub fn root_hash(&self) -> Option<&Hash> {
-        if let Some(root) = &self.root {
-            Some(&root.merkle_hash)
-        } else {
-            None
-        }
+        Some(&self.root.as_ref()?.merkle_hash)
     }
 
     /// Return the value corresponding to the key, if it exists.
@@ -175,6 +185,73 @@ where
             AvlTree::balance_node(node_ref);
         } else {
             *node_ref = as_node_ref(key, value);
+        }
+    }
+
+    /// Return an existence proof for the given element, if it exists.
+    pub fn get_proof<Q: ?Sized>(&self, key: &Q) -> Option<CommitmentProof>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        let proof = self.get_proof_rec(key, &self.root)?;
+        Some(CommitmentProof {
+            proof: Some(Proof::Exist(proof)),
+        })
+    }
+
+    fn get_proof_rec<Q: ?Sized>(&self, key: &Q, node: &NodeRef<K, V>) -> Option<ExistenceProof>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        if let Some(node) = node {
+            let empty_hash = [];
+            let (mut proof, prefix, suffix) = match node.key.borrow().cmp(key) {
+                Ordering::Greater => {
+                    let proof = self.get_proof_rec(key, &node.left)?;
+                    let prefix = vec![];
+                    let mut suffix = Vec::with_capacity(64);
+                    suffix.extend(node.hash.as_bytes());
+                    suffix.extend(node.right_hash().unwrap_or(&empty_hash));
+                    (proof, prefix, suffix)
+                }
+                Ordering::Less => {
+                    let proof = self.get_proof_rec(key, &node.right)?;
+                    let suffix = vec![];
+                    let mut prefix = Vec::with_capacity(64);
+                    prefix.extend(node.left_hash().unwrap_or(&empty_hash));
+                    prefix.extend(node.hash.as_bytes());
+                    (proof, prefix, suffix)
+                }
+                Ordering::Equal => {
+                    let leaf = Some(LeafOp {
+                        hash: HashOp::Sha256.into(),
+                        prehash_key: HashOp::NoHash.into(),
+                        prehash_value: HashOp::NoHash.into(),
+                        length: LengthOp::NoPrefix.into(),
+                        prefix: proof::LEAF_PREFIX.to_vec(),
+                    });
+                    let proof = ExistenceProof {
+                        key: node.key.as_bytes().to_owned(),
+                        value: node.value.borrow().to_owned(),
+                        leaf,
+                        path: vec![],
+                    };
+                    let prefix = node.left_hash().unwrap_or(&empty_hash).to_vec();
+                    let suffix = node.right_hash().unwrap_or(&empty_hash).to_vec();
+                    (proof, prefix, suffix)
+                }
+            };
+            let inner = InnerOp {
+                hash: HashOp::Sha256.into(),
+                prefix,
+                suffix,
+            };
+            proof.path.push(inner);
+            Some(proof)
+        } else {
+            None
         }
     }
 

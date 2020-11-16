@@ -8,6 +8,8 @@ use std::path::Path;
 pub struct Config {
     #[serde(default="default_chain_id")]
     pub chain_id: String,
+    #[serde(default="default_host_client")]
+    pub host_client: Client,
     #[serde(default="default_clients")]
     pub clients: Vec<Client>,
 }
@@ -27,12 +29,19 @@ pub fn load<P: AsRef<Path>>(path: P) -> Config {
 pub fn default() -> Config {
     Config {
         chain_id: String::from("tendermock"),
-        clients: vec![],
+        host_client: default_host_client(),
+        clients: default_clients(),
     }
 }
 
 fn default_chain_id() -> String {
     String::from("tendermock")
+}
+
+fn default_host_client() -> Client {
+    Client {
+        id: String::from("donald_duck"),
+    }
 }
 
 fn default_clients() -> Vec<Client> {

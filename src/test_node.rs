@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::node::*;
+    use crate::config;
     use ibc::ics02_client::client_def::{AnyClientState, AnyConsensusState};
     use ibc::ics02_client::client_type::ClientType;
     use ibc::ics02_client::context::{ClientKeeper, ClientReader};
@@ -15,8 +16,7 @@ mod tests {
     #[test]
     /// Test storage and retrieval of client and consensus states.
     fn client() {
-        let id = String::from("flintheart");
-        let mut node = Node::new(id);
+        let mut node = Node::new(&config::default());
         let height = Height::new(1, 1);
         let client_id = ClientId::from_str("UncleScrooge").unwrap();
         let client_state = dummy_client_state();

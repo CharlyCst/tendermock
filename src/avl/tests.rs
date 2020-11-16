@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests {
     use crate::avl::*;
+    use ics23::verify_membership;
 
     #[test]
     fn insert() {
@@ -77,6 +78,59 @@ mod tests {
     }
 
     #[test]
+    fn proof() {
+        let mut tree = AvlTree::new();
+        tree.insert("A", [0]);
+        tree.insert("B", [1]);
+        let node_a = tree.root.as_ref().unwrap();
+        let node_b = node_a.right.as_ref().unwrap();
+        let root = tree.root_hash().expect("Unable to retrieve root hash");
+        let ics_proof = tree
+            .get_proof("B")
+            .expect("Unable to retrieve proof for 'B'");
+        let proof = match &ics_proof.proof.as_ref().unwrap() {
+            Proof::Exist(proof) => proof,
+            _ => panic!("Should return an existence proof"),
+        };
+        assert_eq!(proof.path.len(), 2);
+        // Apply leaf transformations
+        let leaf = proof
+            .leaf
+            .as_ref()
+            .expect("There should be a leaf in the proof");
+        let mut sha = Sha256::new();
+        sha.update(&leaf.prefix);
+        sha.update("B".as_bytes());
+        sha.update([1]);
+        let child_hash = sha.finalize();
+        // Apply first inner node transformations
+        let inner_b = &proof.path[0];
+        let mut sha = Sha256::new();
+        sha.update(&inner_b.prefix);
+        sha.update(child_hash);
+        sha.update(&inner_b.suffix);
+        let inner_hash_b = sha.finalize();
+        assert_eq!(inner_hash_b.as_slice(), node_b.merkle_hash.as_bytes());
+        // Apply second inner node transformations
+        let inner_a = &proof.path[1];
+        let mut sha = Sha256::new();
+        sha.update(&inner_a.prefix);
+        sha.update(&inner_hash_b);
+        sha.update(&inner_a.suffix);
+        let inner_hash_a = sha.finalize();
+        assert_eq!(inner_hash_a.as_slice(), node_a.merkle_hash.as_bytes());
+        // Check with ics32
+        let spec = get_proof_spec();
+        assert!(verify_membership(
+            &ics_proof,
+            &spec,
+            &root.as_bytes().to_vec(),
+            "B".as_bytes(),
+            &[1]
+        ));
+    }
+
+    #[test]
     fn integration() {
         let mut tree = AvlTree::new();
         tree.insert("M", [0]);
@@ -90,6 +144,23 @@ mod tests {
         tree.insert("I", [0]);
         tree.insert("A", [0]);
         assert!(check_integrity(&tree.root));
+
+        let root = tree
+            .root_hash()
+            .expect("Unable to retrieve root hash")
+            .as_bytes()
+            .to_vec();
+        let proof = tree
+            .get_proof("K")
+            .expect("Unable to retrieve a proof for 'K'");
+        let spec = get_proof_spec();
+        assert!(verify_membership(
+            &proof,
+            &spec,
+            &root,
+            "K".as_bytes(),
+            &[0]
+        ));
     }
 
     /// Check that nodes are ordered, heights are correct and that balance factors are in {-1, 0, 1}.

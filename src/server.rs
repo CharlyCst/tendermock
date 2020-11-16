@@ -10,6 +10,7 @@ use tendermint_rpc::endpoint::{
     broadcast::tx_commit::Request as BroadcastTxCommitRequest,
     broadcast::tx_commit::Response as BroadcastTxCommitResponse, commit::Request as CommitRequest,
     commit::Response as CommitResponse, validators::Request as ValidatorsRequest,
+    status::Request as StatusRequest, status::Response as StatusResponse,
     validators::Response as ValidatorResponse,
 };
 
@@ -17,6 +18,9 @@ use crate::abci;
 use crate::node;
 use crate::store;
 use crate::chain::to_full_block;
+
+const PUBLICK_KEY: &str =
+        "4A25C6640A1F72B9C975338294EF51B6D1C33158BB6ECBA69FBC3FB5A33C9DCE";
 
 #[rpc(server)]
 pub trait Rpc {
@@ -34,6 +38,9 @@ pub trait Rpc {
 
     #[rpc(name = "abci_query", params = "raw")]
     fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse>;
+
+    #[rpc(name = "status", params ="raw")]
+    fn status(&self, req: Params) -> JsonResult<StatusResponse>;
 
     #[rpc(name = "broadcast_tx_commit", params = "raw")]
     fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse>;
@@ -120,6 +127,26 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             validators,
         };
         Ok(validators_responde)
+    }
+
+    /// JsonRPC /status endpoint.
+    fn status(&self, req: Params) -> JsonResult<StatusResponse> {
+        let _req: StatusRequest = parse(req)?;
+        let node = self.node.read().unwrap();
+        let node_info = node.get_info().clone();
+        let sync_info = node.get_sync_info();
+        let validator_info = tendermint::validator::Info {
+            address: tendermint::account::Id::new([41; 20]),
+            pub_key: tendermint::public_key::PublicKey::from_raw_ed25519(&hex::decode(PUBLICK_KEY).unwrap()).unwrap(),
+            voting_power: tendermint::vote::Power::new(1),
+            proposer_priority: None,
+        };
+        let status_response = StatusResponse {
+            node_info,
+            sync_info,
+            validator_info,
+        };
+        Ok(status_response)
     }
 
     /// JsonRPC /abci_info endpoint.

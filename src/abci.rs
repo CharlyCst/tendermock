@@ -8,6 +8,7 @@ use crate::node::Node;
 use crate::store::Storage;
 
 pub fn get_info() -> AbciInfo {
+    // TODO: inject valid informations
     AbciInfo {
         data: "data_placeholder".to_string(),
         version: "v0.16.0".to_string(),

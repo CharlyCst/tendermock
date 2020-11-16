@@ -1818,6 +1818,7 @@ name = "tendermock"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "hex",
  "ibc",
  "ibc-proto",
  "ics23",

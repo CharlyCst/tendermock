@@ -1,4 +1,5 @@
 use crate::chain::Chain;
+use crate::config::Config;
 use crate::store::{InMemoryStore, Storage};
 use ibc::ics02_client::client_def::{AnyClientState, AnyConsensusState};
 use ibc::ics02_client::client_type::ClientType;
@@ -17,6 +18,10 @@ use prost::Message;
 use prost_types::Any;
 use std::convert::TryFrom;
 use std::str::FromStr;
+use tendermint::chain;
+use tendermint::net::Address;
+use tendermint::node;
+use tendermint_rpc::endpoint::status::SyncInfo;
 
 // protobuf URL
 const CONSENSUS_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ConsensusState";
@@ -42,15 +47,38 @@ impl Connections {
 pub struct Node<S: Storage> {
     store: S,
     chain: Chain,
-    id: String,
+    host_client_id: String,
+    info: node::Info,
 }
 
 impl Node<InMemoryStore> {
-    pub fn new(id: String) -> Self {
+    pub fn new(config: &Config) -> Self {
+        // TODO: allow to pass custimized values
+        let info = node::Info {
+            // Node id
+            id: node::Id::new([61; 20]),
+            listen_addr: node::info::ListenAddress::new(String::from("localhost:26657")),
+            network: chain::Id::from_str(&config.chain_id).unwrap(),
+            protocol_version: node::info::ProtocolVersionInfo {
+                p2p: 0,
+                block: 0,
+                app: 0,
+            },
+            version: serde_json::from_value(serde_json::Value::String("v0.1.0".to_string()))
+                .unwrap(),
+            channels: serde_json::from_value(serde_json::Value::String("channels".to_string()))
+                .unwrap(),
+            moniker: tendermint::Moniker::from_str("moniker").unwrap(),
+            other: node::info::OtherInfo {
+                tx_index: node::info::TxIndexStatus::Off,
+                rpc_address: Address::from_str("tcp://127.0.0.1:26657").unwrap(),
+            },
+        };
         Node {
             store: InMemoryStore::new(),
             chain: Chain::new(),
-            id,
+            host_client_id: config.host_client.id.to_owned(),
+            info,
         }
     }
 }
@@ -62,6 +90,26 @@ impl<S: Storage> Node<S> {
 
     pub fn get_chain(&self) -> &Chain {
         &self.chain
+    }
+
+    pub fn get_info(&self) -> &node::Info {
+        &self.info
+    }
+
+    /// Get sync infos. For now only the field `latest_block_height` contains a valid value.
+    pub fn get_sync_info(&self) -> SyncInfo {
+        let latest_block_height = self.chain.get_height();
+        let block = self
+            .chain
+            .get_block(0)
+            .expect("The chain should always contain a block");
+        SyncInfo {
+            latest_block_hash: None,
+            latest_app_hash: None,
+            latest_block_height: (latest_block_height.version_height as u32).into(),
+            latest_block_time: block.signed_header.header.time,
+            catching_up: false,
+        }
     }
 }
 
@@ -213,7 +261,7 @@ impl<S: Storage> ConnectionReader for Node<S> {
     }
 
     fn host_consensus_state(&self, height: Height) -> Option<AnyConsensusState> {
-        let host_id = ClientId::from_str(&self.id).unwrap();
+        let host_id = ClientId::from_str(&self.host_client_id).unwrap();
         self.consensus_state(&host_id, height)
     }
 

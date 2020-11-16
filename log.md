@@ -150,3 +150,11 @@ How do we get the hash of the parts?
 ### November 12
 
 - The tree is merkleized.
+
+### November 15
+
+- Add ability to prove membership though ics 23
+
+### November 16
+
+- Handle `status` JsonRPC request.

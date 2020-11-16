@@ -22,7 +22,7 @@ fn main() {
     } else {
         config::default()
     };
-    let mut node = node::Node::new(config.chain_id.clone());
+    let mut node = node::Node::new(&config);
     init::init(&mut node, &config);
     let server = server::Server::new(args.verbose, node);
     let mut io = IoHandler::new();
