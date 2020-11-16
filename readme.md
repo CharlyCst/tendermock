@@ -1,30 +1,42 @@
-# IBC Mock
+# Tendermock
 
-## TODO:
+A fake Tendermind for testing purposes.
 
-- Setup an HTTP server
-	- Let's use Hyper
-- Deserialize IBC jsonRPC queries
-- Serialize response
+## How to use:
 
-**Storage**:
-The light client relies on two functions from Tendermint RPC:
-- **commit**
-- **validators**
+The fake node can be run with:
 
-See [Used Remote Functions](https://github.com/informalsystems/tendermint-rs/blob/master/docs/spec/lightclient/verification/verification.md#used-remote-functions)
+```sh
+cargo run
+```
 
-To implement RPC the `[terdermint_rpc](https://github.com/informalsystems/tendermint-rs/tree/master/rpc)` crate can be helpful. This crate exposes requests and response structs deriving Serde's Deserialize and Serialize traits.
+A few options are available:
 
-## Questions:
+```
+USAGE:
+    tendermock [FLAGS] [OPTIONS]
 
-- JSON RPC request wrapper is not public (see [code](https://docs.rs/tendermint-rpc/0.16.0/src/tendermint_rpc/request.rs.html#1-50))
-- tendermint-rpc expects a string for the `height` parameter, but the light client doc says that is send a number (see [doc](https://github.com/informalsystems/tendermint-rs/blob/master/docs/spec/lightclient/verification/verification.md#used-remote-functions))
+FLAGS:
+    -h, --help       Prints help information
+    -v, --verbose    Verbode mode
+    -V, --version    Prints version information
 
+OPTIONS:
+    -c, --config <config>    Path to json configuration file
+    -p, --port <port>        JsonRPC port [default: 26657]
+```
 
-## Useful links:
-- [IBC modules](https://github.com/informalsystems/ibc-rs/tree/master/modules)
-- [Light client](https://github.com/informalsystems/tendermint-rs/tree/master/light-client)
-- [Merkle tree crate](https://docs.rs/merkletree/0.21.0/merkletree/)
-- [HTTP crate](https://docs.rs/hyper/0.13.7/hyper/index.html)
+An example of a valid config can be found in `test/config.example.json`, which can be used like that:
+
+```sh
+cargo run -- -c test/config.example.json -v
+```
+
+## Sending queries
+
+A few example queries are available in `./queries`, the node can easily be queried using curl:
+
+```
+curl -X POST -H 'Content-Type: application/json' -d @queries/block.json 127.0.0.1:26657/ | jq
+```
 
