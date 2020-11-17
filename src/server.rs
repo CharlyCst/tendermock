@@ -84,7 +84,7 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
         let hash = tm_block.header.hash();
         let block_response = BlockResponse {
             block_id: tendermint::block::Id {
-                part_set_header: tendermint::block::parts::Header::new(1, hash.clone()),
+                part_set_header: tendermint::block::parts::Header::new(1, hash.clone()).unwrap(),
                 hash,
             },
             block: tm_block,
@@ -149,8 +149,8 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
                 &hex::decode(PUBLICK_KEY).unwrap(),
             )
             .unwrap(),
-            voting_power: tendermint::vote::Power::new(1),
-            proposer_priority: None,
+            voting_power: (1 as u32).into(),
+            proposer_priority: 1.into(),
         };
         let status_response = StatusResponse {
             node_info,

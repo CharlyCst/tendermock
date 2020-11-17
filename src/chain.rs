@@ -55,12 +55,12 @@ impl Chain {
 
 pub fn to_full_block(light_block: TMLightBlock) -> TMBlock {
     let signed_header = light_block.signed_header;
-    let block = tendermint::Block {
-        header: signed_header.header,
-        data: tendermint::abci::transaction::Data::new(vec![]), // TODO: should we include transaction data?
-        evidence: tendermint::evidence::Data::new(vec![]),
-        last_commit: Some(signed_header.commit),
-    };
+    let block = tendermint::Block::new(
+        signed_header.header,
+        tendermint::abci::transaction::Data::default(), // TODO: should we include transaction data?
+        tendermint::evidence::Data::new(vec![]),
+        Some(signed_header.commit),
+    ).unwrap();
     block
 }
 

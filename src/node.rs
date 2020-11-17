@@ -7,7 +7,7 @@ use ibc::ics02_client::context::{ClientKeeper, ClientReader};
 use ibc::ics02_client::error::Error as ClientError;
 use ibc::ics03_connection::connection::ConnectionEnd;
 use ibc::ics03_connection::context::{ConnectionKeeper, ConnectionReader};
-use ibc::ics03_connection::error::Error as ConnectionError;
+use ibc::ics03_connection::error::{Error as ConnectionError, Kind as ConnectionErrorKind};
 use ibc::ics23_commitment::commitment::CommitmentPrefix;
 use ibc::ics24_host::identifier::{ClientId, ConnectionId};
 use ibc::Height;
@@ -103,9 +103,10 @@ impl<S: Storage> Node<S> {
             .chain
             .get_block(0)
             .expect("The chain should always contain a block");
+        let hash = block.signed_header.header.hash();
         SyncInfo {
-            latest_block_hash: None,
-            latest_app_hash: None,
+            latest_block_hash: hash,
+            latest_app_hash: tendermint::AppHash::try_from(vec![61 as u8; 32]).unwrap(),
             latest_block_height: (latest_block_height.version_height as u32).into(),
             latest_block_time: block.signed_header.header.time,
             catching_up: false,
@@ -227,13 +228,11 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
 }
 
 impl<S: Storage> ConnectionReader for Node<S> {
-    fn connection_end(&self, connection_id: &ConnectionId) -> Option<&ConnectionEnd> {
+    fn connection_end(&self, connection_id: &ConnectionId) -> Option<ConnectionEnd> {
         let path = format!("connections/{}", connection_id.as_str());
         let value = self.store.get(0, path.as_bytes())?;
         let raw = RawConnectionEnd::decode(&*value).ok()?;
-        let _connection_end = ConnectionEnd::try_from(raw).ok()?;
-        unimplemented!();
-        //Some(std::rc::Rc::new(connection_end))
+        ConnectionEnd::try_from(raw).ok()
     }
 
     fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {
@@ -271,10 +270,14 @@ impl<S: Storage> ConnectionReader for Node<S> {
     }
 
     // TODO: what if there is no compatible versions?
-    fn pick_version(&self, counterparty_candidate_versions: Vec<String>) -> String {
+    fn pick_version(
+        &self,
+        supported_versions: Vec<String>,
+        counterparty_candidate_versions: Vec<String>,
+    ) -> Result<String, ConnectionError> {
         match counterparty_candidate_versions.get(0) {
-            Some(version) => version.to_owned(),
-            None => String::from("0.0.1"),
+            Some(version) => Ok(version.to_owned()),
+            None => Err(ConnectionErrorKind::NoCommonVersion.into()),
         }
     }
 }

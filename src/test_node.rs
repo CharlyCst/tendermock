@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use crate::node::*;
     use crate::config;
+    use crate::node::*;
     use ibc::ics02_client::client_def::{AnyClientState, AnyConsensusState};
     use ibc::ics02_client::client_type::ClientType;
     use ibc::ics02_client::context::{ClientKeeper, ClientReader};
@@ -12,6 +12,9 @@ mod tests {
     use ibc::Height;
     use std::convert::TryInto;
     use std::str::FromStr;
+    use tendermint;
+    use tendermint::consensus::Params;
+    use tendermint::trust_threshold::TrustThresholdFraction;
 
     #[test]
     /// Test storage and retrieval of client and consensus states.
@@ -57,6 +60,7 @@ mod tests {
         let client_state = ClientState {
             chain_id: String::from("test_chain"),
             trusting_period: duration.clone(),
+            trust_level: TrustThresholdFraction::new(1, 3).unwrap(),
             unbonding_period: duration.clone(),
             max_clock_drift: duration,
             frozen_height: height.clone(),
@@ -64,6 +68,23 @@ mod tests {
             upgrade_path: String::from("path"),
             allow_update_after_expiry: false,
             allow_update_after_misbehaviour: false,
+            consensus_params: Params {
+                version: None,
+                block: tendermint::block::Size {
+                    max_bytes: 10000,
+                    max_gas: 10000,
+                },
+                evidence: tendermint::evidence::Params {
+                    max_num: 10000,
+                    max_age_duration: tendermint::evidence::Duration(
+                        std::time::Duration::from_secs(3600),
+                    ),
+                    max_age_num_blocks: 10000,
+                },
+                validator: tendermint::consensus::params::ValidatorParams {
+                    pub_key_types: vec![],
+                },
+            },
         };
         AnyClientState::Tendermint(client_state)
     }

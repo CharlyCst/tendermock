@@ -45,6 +45,7 @@ fn main() {
     server.wait();
 }
 
+/// Push a new block on the chain every `interval` seconds.
 pub fn schedule_growth<S: store::Storage>(node: server::SharedNode<S>, interval: u64) {
     loop {
         std::thread::sleep(std::time::Duration::from_secs(interval));
