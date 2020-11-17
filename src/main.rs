@@ -25,13 +25,30 @@ fn main() {
     let mut node = node::Node::new(&config);
     init::init(&mut node, &config);
     let server = server::Server::new(args.verbose, node);
+
+    // Automatically grow the chain
+    let node = server.get_node();
+    std::thread::spawn(move || schedule_growth(node, 3));
+
+    // Start the server
+    println!("Starting JsonRPC");
     let mut io = IoHandler::new();
     io.extend_with(server.to_delegate());
-
-    println!("Starting JsonRPC");
     let server = ServerBuilder::new(io)
-        .start_http(&format!("127.0.0.1:{}", args.port).parse().expect("Invalid IP address or port"))
+        .start_http(
+            &format!("127.0.0.1:{}", args.port)
+                .parse()
+                .expect("Invalid IP address or port"),
+        )
         .expect("Unable to start RPC server");
 
     server.wait();
+}
+
+pub fn schedule_growth<S: store::Storage>(node: server::SharedNode<S>, interval: u64) {
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(interval));
+        let node = node.write().unwrap();
+        node.get_chain().grow();
+    }
 }

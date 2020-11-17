@@ -1,7 +1,7 @@
 // use ibc::ics26_routing::handler::deliver_tx;
 use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
 use jsonrpc_derive::rpc;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
@@ -45,16 +45,22 @@ pub trait Rpc {
     fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse>;
 }
 
+pub type SharedNode<S> = Arc<RwLock<node::Node<S>>>;
+
 /// A JsonRPC server.
 pub struct Server<S: store::Storage> {
     verbose: bool,
-    node: RwLock<node::Node<S>>,
+    node: SharedNode<S>,
 }
 
 impl<S: store::Storage> Server<S> {
     pub fn new(verbose: bool, node: node::Node<S>) -> Self {
-        let node = RwLock::new(node);
+        let node = Arc::new(RwLock::new(node));
         Server { verbose, node }
+    }
+
+    pub fn get_node(&self) -> SharedNode<S> {
+        self.node.clone()
     }
 }
 
