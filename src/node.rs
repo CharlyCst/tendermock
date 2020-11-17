@@ -272,7 +272,7 @@ impl<S: Storage> ConnectionReader for Node<S> {
     // TODO: what if there is no compatible versions?
     fn pick_version(
         &self,
-        supported_versions: Vec<String>,
+        _supported_versions: Vec<String>,
         counterparty_candidate_versions: Vec<String>,
     ) -> Result<String, ConnectionError> {
         match counterparty_candidate_versions.get(0) {

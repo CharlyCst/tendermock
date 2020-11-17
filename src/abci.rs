@@ -7,13 +7,16 @@ use tendermint_rpc::endpoint::{
 use crate::node::Node;
 use crate::store::Storage;
 
-pub fn get_info() -> AbciInfo {
+pub fn get_info<S: Storage>(node: &Node<S>) -> AbciInfo {
+    let chain = node.get_chain();
     // TODO: inject valid informations
     AbciInfo {
         data: "data_placeholder".to_string(),
-        version: "v0.16.0".to_string(),
+        version: "v0.17.0".to_string(),
         app_version: 1,
-        last_block_height: tendermint::block::Height::from(1 as u32),
+        last_block_height: tendermint::block::Height::from(
+            chain.get_height().version_height as u32,
+        ),
         last_block_app_hash: vec![],
     }
 }

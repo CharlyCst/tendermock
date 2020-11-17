@@ -166,8 +166,9 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
         if self.verbose {
             println!("JsonRPC /abci_info  {:?}", req);
         }
+        let node = self.node.read().unwrap();
         let abci_info_response = AbciInfoResponse {
-            response: abci::get_info(),
+            response: abci::get_info(&node),
         };
         Ok(abci_info_response)
     }

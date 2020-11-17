@@ -145,6 +145,7 @@ where
         AvlTree { root: None }
     }
 
+    #[allow(dead_code)]
     /// Return the hash of the merkle tree root, if it has at least one node.
     pub fn root_hash(&self) -> Option<&Hash> {
         Some(&self.root.as_ref()?.merkle_hash)
@@ -188,6 +189,7 @@ where
         }
     }
 
+    #[allow(dead_code)]
     /// Return an existence proof for the given element, if it exists.
     pub fn get_proof<Q: ?Sized>(&self, key: &Q) -> Option<CommitmentProof>
     where
