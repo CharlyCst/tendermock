@@ -38,7 +38,13 @@ impl Chain {
         let last_block = blocks
             .last()
             .expect("[Internal] Chain should be initialized with a block.");
-        let next_block = last_block.next();
+        let mut next_block = last_block.next();
+        let mut header_ref = next_block.header.as_mut().unwrap();
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        header_ref.time = Some(now);
         blocks.push(next_block);
         Some(())
     }
@@ -60,7 +66,8 @@ pub fn to_full_block(light_block: TMLightBlock) -> TMBlock {
         tendermint::abci::transaction::Data::default(), // TODO: should we include transaction data?
         tendermint::evidence::Data::new(vec![]),
         Some(signed_header.commit),
-    ).unwrap();
+    )
+    .unwrap();
     block
 }
 
