@@ -9,7 +9,8 @@ use tendermint_rpc::endpoint::{
     block::Request as BlockRequest, block::Response as BlockResponse,
     broadcast::tx_commit::Request as BroadcastTxCommitRequest,
     broadcast::tx_commit::Response as BroadcastTxCommitResponse, commit::Request as CommitRequest,
-    commit::Response as CommitResponse, status::Request as StatusRequest,
+    commit::Response as CommitResponse, genesis::Request as GenesisRequest,
+    genesis::Response as GenesisResponse, status::Request as StatusRequest,
     status::Response as StatusResponse, validators::Request as ValidatorsRequest,
     validators::Response as ValidatorResponse,
 };
@@ -28,6 +29,9 @@ pub trait Rpc {
 
     #[rpc(name = "commit", params = "raw")]
     fn commit(&self, req: Params) -> JsonResult<CommitResponse>;
+
+    #[rpc(name = "genesis", params = "raw")]
+    fn genesis(&self, req: Params) -> JsonResult<GenesisResponse>;
 
     #[rpc(name = "validators", params = "raw")]
     fn validators(&self, req: Params) -> JsonResult<ValidatorResponse>;
@@ -82,14 +86,13 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             .ok_or_else(|| JsonError::invalid_request())?;
         let tm_block = to_full_block(block);
         let hash = tm_block.header.hash();
-        let block_response = BlockResponse {
+        Ok(BlockResponse {
             block_id: tendermint::block::Id {
                 part_set_header: tendermint::block::parts::Header::new(1, hash.clone()).unwrap(),
                 hash,
             },
             block: tm_block,
-        };
-        Ok(block_response)
+        })
     }
 
     /// JsonRPC /commit endpoint.
@@ -108,11 +111,29 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             .get_block(height)
             .ok_or_else(|| JsonError::invalid_request())?;
         let signed_header = block.signed_header;
-        let commit_response = CommitResponse {
+        Ok(CommitResponse {
             signed_header,
             canonical: false,
+        })
+    }
+
+    /// JsonRPC /genesis endpoint.
+    fn genesis(&self, req: Params) -> JsonResult<GenesisResponse> {
+        let req: GenesisRequest = parse(req)?;
+        if self.verbose {
+            println!("JsonRPC /genesis     {:?}", req);
+        }
+        let node = self.node.read().unwrap();
+        let genesis_block = node.get_chain().get_block(1).unwrap();
+        let genesis = tendermint::Genesis {
+            genesis_time: genesis_block.signed_header.header.time,
+            chain_id: node.get_chain_id().clone(),
+            consensus_params: node.get_consensus_params().clone(),
+            validators: genesis_block.validators.validators().clone(),
+            app_hash: vec![],
+            app_state: serde_json::Value::Null,
         };
-        Ok(commit_response)
+        Ok(GenesisResponse { genesis })
     }
 
     /// JsonRPC /validators endpoint.
@@ -127,11 +148,10 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             .get_block(req.height.into())
             .ok_or_else(|| JsonError::invalid_request())?;
         let validators = block.validators.validators().clone();
-        let validators_responde = ValidatorResponse {
+        Ok(ValidatorResponse {
             block_height: Height::from(1 as u32),
             validators,
-        };
-        Ok(validators_responde)
+        })
     }
 
     /// JsonRPC /status endpoint.
@@ -152,12 +172,11 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             voting_power: (1 as u32).into(),
             proposer_priority: 1.into(),
         };
-        let status_response = StatusResponse {
+        Ok(StatusResponse {
             node_info,
             sync_info,
             validator_info,
-        };
-        Ok(status_response)
+        })
     }
 
     /// JsonRPC /abci_info endpoint.
@@ -167,10 +186,9 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             println!("JsonRPC /abci_info  {:?}", req);
         }
         let node = self.node.read().unwrap();
-        let abci_info_response = AbciInfoResponse {
+        Ok(AbciInfoResponse {
             response: abci::get_info(&node),
-        };
-        Ok(abci_info_response)
+        })
     }
 
     /// JsonRPC /abci_query endpoint.
@@ -180,10 +198,9 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
             println!("JsonRPC /abci_query {:?}", req);
         }
         let node = self.node.read().unwrap();
-        let abci_query_response = AbciQueryResponse {
+        Ok(AbciQueryResponse {
             response: abci::handle_query(req, &node),
-        };
-        Ok(abci_query_response)
+        })
     }
 
     /// JsonRPC /broadcast_tx_commit endpoint.

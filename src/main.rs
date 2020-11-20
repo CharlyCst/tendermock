@@ -18,9 +18,9 @@ use server::Rpc;
 fn main() {
     let args = cli::get_args();
     let config = if let Some(config_path) = args.config {
-        config::load(config_path)
+        config::Config::load(config_path)
     } else {
-        config::default()
+        config::Config::default()
     };
     let mut node = node::Node::new(&config);
     init::init(&mut node, &config);

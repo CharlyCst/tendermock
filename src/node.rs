@@ -47,8 +47,10 @@ impl Connections {
 pub struct Node<S: Storage> {
     store: S,
     chain: Chain,
+    chain_id: tendermint::chain::Id,
     host_client_id: String,
     info: node::Info,
+    consensus_params: tendermint::consensus::Params,
 }
 
 impl Node<InMemoryStore> {
@@ -77,7 +79,9 @@ impl Node<InMemoryStore> {
         Node {
             store: InMemoryStore::new(),
             chain: Chain::new(),
+            chain_id: tendermint::chain::Id::try_from(config.chain_id.to_owned()).unwrap(),
             host_client_id: config.host_client.id.to_owned(),
+            consensus_params: config.consensus_params.clone(),
             info,
         }
     }
@@ -94,6 +98,14 @@ impl<S: Storage> Node<S> {
 
     pub fn get_info(&self) -> &node::Info {
         &self.info
+    }
+
+    pub fn get_chain_id(&self) -> &chain::Id {
+        &self.chain_id
+    }
+
+    pub fn get_consensus_params(&self) -> &tendermint::consensus::Params {
+        &self.consensus_params
     }
 
     /// Get sync infos. For now only the field `latest_block_height` contains a valid value.
