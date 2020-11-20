@@ -28,7 +28,9 @@ fn main() {
 
     // Automatically grow the chain
     let node = server.get_node();
-    std::thread::spawn(move || schedule_growth(node, 3));
+    let block_interval = args.block;
+    let verbose = args.verbose;
+    std::thread::spawn(move || schedule_growth(node, block_interval, verbose));
 
     // Start the server
     println!("Starting JsonRPC");
@@ -36,7 +38,7 @@ fn main() {
     io.extend_with(server.to_delegate());
     let server = ServerBuilder::new(io)
         .start_http(
-            &format!("127.0.0.1:{}", args.port)
+            &format!("127.0.0.1:{}", &args.port)
                 .parse()
                 .expect("Invalid IP address or port"),
         )
@@ -46,10 +48,17 @@ fn main() {
 }
 
 /// Push a new block on the chain every `interval` seconds.
-pub fn schedule_growth<S: store::Storage>(node: server::SharedNode<S>, interval: u64) {
+pub fn schedule_growth<S: store::Storage>(
+    node: server::SharedNode<S>,
+    interval: u64,
+    verbose: bool,
+) {
     loop {
         std::thread::sleep(std::time::Duration::from_secs(interval));
         let node = node.write().unwrap();
         node.get_chain().grow();
+        if verbose {
+            println!("New block")
+        }
     }
 }

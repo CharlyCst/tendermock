@@ -158,3 +158,13 @@ How do we get the hash of the parts?
 ### November 16
 
 - Handle `status` JsonRPC request.
+
+### November 17
+
+- Automatically push new blocks to the chain
+
+### November 20
+
+- Add `/genesis` endpoint
+- Set date of new blocks to `now`
+- Add cli arg to set new block frequency

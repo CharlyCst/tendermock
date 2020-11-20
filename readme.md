@@ -22,6 +22,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
+    -b, --block <block>      Seconds between two blocks, 0 for no growth [default: 3]
     -c, --config <config>    Path to json configuration file
     -p, --port <port>        JsonRPC port [default: 26657]
 ```
