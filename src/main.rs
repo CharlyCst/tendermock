@@ -1,5 +1,6 @@
 use jsonrpc_core::IoHandler;
 use jsonrpc_http_server::ServerBuilder;
+use tokio;
 
 mod abci;
 mod avl;
@@ -7,13 +8,14 @@ mod chain;
 mod cli;
 mod config;
 mod data;
+mod grpc;
 mod init;
+mod json_rpc;
 mod node;
-mod server;
 mod store;
 mod test_node;
 
-use server::Rpc;
+use json_rpc::Rpc;
 
 fn main() {
     let args = cli::get_args();
@@ -24,7 +26,7 @@ fn main() {
     };
     let mut node = node::Node::new(&config);
     init::init(&mut node, &config);
-    let server = server::Server::new(args.verbose, node);
+    let server = json_rpc::Server::new(args.verbose, node);
 
     // Automatically grow the chain
     let node = server.get_node();
@@ -32,7 +34,7 @@ fn main() {
     let verbose = args.verbose;
     std::thread::spawn(move || schedule_growth(node, block_interval, verbose));
 
-    // Start the server
+    // Start JsonRpc server
     println!("Starting JsonRPC");
     let mut io = IoHandler::new();
     io.extend_with(server.to_delegate());
@@ -44,15 +46,23 @@ fn main() {
         )
         .expect("Unable to start RPC server");
 
+    // Start the grpc server
+    println!("Starting grpc");
+    let addr = "[::1]:50051".parse().unwrap();
+    tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(async {
+            grpc::Server::new().serve(addr).await.unwrap();
+        });
+
     server.wait();
 }
 
 /// Push a new block on the chain every `interval` seconds.
-pub fn schedule_growth<S: store::Storage>(
-    node: server::SharedNode<S>,
-    interval: u64,
-    verbose: bool,
-) {
+pub fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u64, verbose: bool) {
+    if interval == 0 {
+        return;
+    }
     loop {
         std::thread::sleep(std::time::Duration::from_secs(interval));
         let node = node.write().unwrap();

@@ -30,6 +30,8 @@ const CLIENT_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ClientSt
 // System constant
 const COMMITMENT_PREFIX: &'static str = "store/ibc/key";
 
+pub type SharedNode<S> = std::sync::Arc<std::sync::RwLock<Node<S>>>;
+
 /// A type representing connections in memory
 #[derive(Serialize, Deserialize)]
 struct Connections {

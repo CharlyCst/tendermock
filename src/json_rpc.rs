@@ -49,12 +49,11 @@ pub trait Rpc {
     fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse>;
 }
 
-pub type SharedNode<S> = Arc<RwLock<node::Node<S>>>;
 
 /// A JsonRPC server.
 pub struct Server<S: store::Storage> {
     verbose: bool,
-    node: SharedNode<S>,
+    node: node::SharedNode<S>,
 }
 
 impl<S: store::Storage> Server<S> {
@@ -63,7 +62,7 @@ impl<S: store::Storage> Server<S> {
         Server { verbose, node }
     }
 
-    pub fn get_node(&self) -> SharedNode<S> {
+    pub fn get_node(&self) -> node::SharedNode<S> {
         self.node.clone()
     }
 }
