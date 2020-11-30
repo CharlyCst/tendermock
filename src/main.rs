@@ -32,7 +32,8 @@ fn main() {
     let node = server.get_node();
     let block_interval = args.block;
     let verbose = args.verbose;
-    std::thread::spawn(move || schedule_growth(node, block_interval, verbose));
+    let growth_node = node.clone();
+    std::thread::spawn(move || schedule_growth(growth_node, block_interval, verbose));
 
     // Start JsonRpc server
     println!("Starting JsonRPC");
@@ -52,7 +53,7 @@ fn main() {
     tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(async {
-            grpc::Server::new().serve(addr).await.unwrap();
+            grpc::new(node).serve(addr).await.unwrap();
         });
 
     server.wait();

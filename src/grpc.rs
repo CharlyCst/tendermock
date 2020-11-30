@@ -1,29 +1,30 @@
+use crate::node;
+use crate::store::Storage;
 use ibc_proto::cosmos::staking::v1beta1;
 use ibc_proto::cosmos::staking::v1beta1::query_server::{Query, QueryServer};
 
 type GrpcServer<T> = tonic::transport::server::Router<T, tonic::transport::server::Unimplemented>;
 
-/// A grcp server.
-pub struct Server {}
-
-impl Server {
-    pub fn new() -> GrpcServer<QueryServer<QueryService>> {
-        let query_service = QueryService::new();
-        tonic::transport::Server::builder().add_service(QueryServer::new(query_service))
-    }
+pub fn new<S: 'static + Storage + Sync + Send>(
+    node: node::SharedNode<S>,
+) -> GrpcServer<QueryServer<QueryService<S>>> {
+    let query_service = QueryService::new(node);
+    tonic::transport::Server::builder().add_service(QueryServer::new(query_service))
 }
 
 /// A struct handling the `Query` service.
-pub struct QueryService {}
+pub struct QueryService<S: Storage> {
+    node: node::SharedNode<S>,
+}
 
-impl QueryService {
-    fn new() -> Self {
-        QueryService {}
+impl<S: Storage> QueryService<S> {
+    fn new(node: node::SharedNode<S>) -> Self {
+        QueryService { node }
     }
 }
 
 #[tonic::async_trait]
-impl Query for QueryService {
+impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
     async fn validator(
         &self,
         _request: tonic::Request<v1beta1::QueryValidatorRequest>,
@@ -122,6 +123,16 @@ impl Query for QueryService {
         _request: tonic::Request<v1beta1::QueryParamsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryParamsResponse>, tonic::Status> {
         println!("Param request!");
-        unimplemented!();
+        //let node = self.node.read().unwrap();
+        let response = v1beta1::QueryParamsResponse {
+            params: Some(v1beta1::Params {
+                bond_denom: "bond_denom".to_owned(),
+                historical_entries: 0,
+                max_entries: 3,
+                max_validators: 3,
+                unbonding_time: Some(std::time::Duration::new(3600, 0).into()),
+            }),
+        };
+        Ok(tonic::Response::new(response))
     }
 }
