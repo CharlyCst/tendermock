@@ -122,8 +122,6 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         &self,
         _request: tonic::Request<v1beta1::QueryParamsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryParamsResponse>, tonic::Status> {
-        println!("Param request!");
-        //let node = self.node.read().unwrap();
         let response = v1beta1::QueryParamsResponse {
             params: Some(v1beta1::Params {
                 bond_denom: "bond_denom".to_owned(),

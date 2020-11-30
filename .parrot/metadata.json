@@ -12,7 +12,7 @@
       "stderr": "alpha-character-in-port.err"
     },
     {
-      "cmd": "./target/debug/tendermock -c test/malformed_config.json",
+      "cmd": "./target/debug/tendermock -c config/malformed_config.json",
       "name": "unknown-config-field",
       "description": "Unknown field in config.json are disabled (this avoid bad surprises with typos).\n#config",
       "tags": [

@@ -48,7 +48,7 @@ fn main() {
         .expect("Unable to start RPC server");
 
     // Start the grpc server
-    println!("Starting grpc");
+    println!("Starting gRPC");
     let addr = "[::1]:50051".parse().unwrap();
     tokio::runtime::Runtime::new()
         .unwrap()

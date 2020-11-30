@@ -1,2 +1,2 @@
-thread 'main' panicked at 'Could not parse config file: Error("unknown field `chain__id`, expected one of `chain_id`, `host_client`, `clients`", line: 2, column: 15)', src/config.rs:26:35
+thread 'main' panicked at 'Could not parse config file: Error("unknown field `chain__id`, expected one of `chain_id`, `host_client`, `clients`, `consensus_params`", line: 2, column: 15)', src/config.rs:26:39
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
