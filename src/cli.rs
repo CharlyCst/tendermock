@@ -11,7 +11,10 @@ pub struct Args {
 
     /// JsonRPC port
     #[clap(short, long, default_value = "26657")]
-    pub port: u16,
+    pub json_port: u16,
+
+    #[clap(short, long, default_value = "50051")]
+    pub grpc_port: u16,
 
     /// Path to json configuration file
     #[clap(short, long)]

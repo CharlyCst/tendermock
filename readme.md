@@ -22,9 +22,10 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -b, --block <block>      Seconds between two blocks, 0 for no growth [default: 3]
-    -c, --config <config>    Path to json configuration file
-    -p, --port <port>        JsonRPC port [default: 26657]
+    -b, --block <block>            Seconds between two blocks, 0 for no growth [default: 3]
+    -c, --config <config>          Path to json configuration file
+    -g, --grpc-port <grpc-port>    [default: 50051]
+    -j, --json-port <json-port>    JsonRPC port [default: 26657]
 ```
 
 An example of a valid config can be found in `test/config.example.json`, which can be used like that:

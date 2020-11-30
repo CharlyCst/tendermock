@@ -41,7 +41,7 @@ fn main() {
     io.extend_with(server.to_delegate());
     let server = ServerBuilder::new(io)
         .start_http(
-            &format!("127.0.0.1:{}", &args.port)
+            &format!("127.0.0.1:{}", &args.json_port)
                 .parse()
                 .expect("Invalid IP address or port"),
         )
@@ -49,7 +49,7 @@ fn main() {
 
     // Start the grpc server
     println!("Starting gRPC");
-    let addr = "[::1]:50051".parse().unwrap();
+    let addr = format!("[::1]:{}", &args.grpc_port).parse().unwrap();
     tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(async {
