@@ -168,3 +168,11 @@ How do we get the hash of the parts?
 - Add `/genesis` endpoint
 - Set date of new blocks to `now`
 - Add cli arg to set new block frequency
+
+### November 30
+
+Seems like I forgot to log a few things last week...
+
+Overall I added a gRPC, I had to fork `ibc-rs` and change a flag to `true` in order to generate Tonic server-side structures.
+Then I implemented the gRPC server in terdermock, for now most methods are `unimplemented!` as we only need one currently.
+gRPC is not as easy to test as a simple curl might be, that's why I had to add integration tests, just to be sure that everything 
