@@ -50,11 +50,9 @@ fn main() {
     // Start the grpc server
     println!("Starting gRPC");
     let addr = format!("[::1]:{}", &args.grpc_port).parse().unwrap();
-    tokio::runtime::Runtime::new()
-        .unwrap()
-        .block_on(async {
-            grpc::new(node).serve(addr).await.unwrap();
-        });
+    tokio::runtime::Runtime::new().unwrap().block_on(async {
+        grpc::new(node).serve(addr).await.unwrap();
+    });
 
     server.wait();
 }
@@ -69,7 +67,9 @@ pub fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u
         let node = node.write().unwrap();
         node.get_chain().grow();
         if verbose {
-            println!("New block")
+            let block = node.get_chain().get_block(0).unwrap();
+            let header = block.signed_header.header;
+            println!("height: {} - hash: {}",header.height, &header.hash());
         }
     }
 }
