@@ -14,6 +14,7 @@ pub fn new<S: 'static + Storage + Sync + Send>(
 
 /// A struct handling the `Query` service.
 pub struct QueryService<S: Storage> {
+    #[allow(dead_code)]
     node: node::SharedNode<S>,
 }
 

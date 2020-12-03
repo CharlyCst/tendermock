@@ -175,4 +175,12 @@ Seems like I forgot to log a few things last week...
 
 Overall I added a gRPC, I had to fork `ibc-rs` and change a flag to `true` in order to generate Tonic server-side structures.
 Then I implemented the gRPC server in terdermock, for now most methods are `unimplemented!` as we only need one currently.
-gRPC is not as easy to test as a simple curl might be, that's why I had to add integration tests, just to be sure that everything 
+gRPC is not as easy to test as a simple curl might be, that's why I had to add integration tests, just to be sure that everything
+
+## December 2
+
+- Add integration tests for jsonRPC.
+
+## December 3
+
+- Work on websocket endpoint

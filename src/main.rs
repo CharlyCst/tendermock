@@ -1,6 +1,9 @@
+use futures::future::FutureExt;
+use futures::try_join;
 use jsonrpc_core::IoHandler;
 use jsonrpc_http_server::ServerBuilder;
 use tokio;
+use warp;
 
 mod abci;
 mod avl;
@@ -14,6 +17,7 @@ mod json_rpc;
 mod node;
 mod store;
 mod test_node;
+mod websockets;
 
 use json_rpc::Rpc;
 
@@ -41,19 +45,32 @@ fn main() {
     io.extend_with(server.to_delegate());
     let server = ServerBuilder::new(io)
         .start_http(
-            &format!("127.0.0.1:{}", &args.json_port)
+            &format!("127.0.0.1:{}", args.json_port)
                 .parse()
                 .expect("Invalid IP address or port"),
         )
         .expect("Unable to start RPC server");
 
-    // Start the grpc server
+    // WebSocket server
+    let ws = websockets::new();
+    let ws_server = warp::serve(ws)
+        .run(
+            format!("127.0.0.1:{}", args.json_port + 1)
+                .parse::<std::net::SocketAddr>()
+                .expect("Invalid IP address or port"),
+        )
+        .then(|()| async { Ok(()) });
+
+    // gRPC server
     println!("Starting gRPC");
     let addr = format!("[::1]:{}", &args.grpc_port).parse().unwrap();
-    tokio::runtime::Runtime::new().unwrap().block_on(async {
-        grpc::new(node).serve(addr).await.unwrap();
-    });
+    let grpc_server = grpc::new(node).serve(addr);
 
+    // Start servers
+    tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(async { try_join!(ws_server, grpc_server) })
+        .unwrap();
     server.wait();
 }
 
@@ -69,7 +86,7 @@ pub fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u
         if verbose {
             let block = node.get_chain().get_block(0).unwrap();
             let header = block.signed_header.header;
-            println!("height: {} - hash: {}",header.height, &header.hash());
+            println!("height: {} - hash: {}", header.height, &header.hash());
         }
     }
 }
