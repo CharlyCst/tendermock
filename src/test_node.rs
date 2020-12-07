@@ -19,7 +19,8 @@ mod tests {
     #[test]
     /// Test storage and retrieval of client and consensus states.
     fn client() {
-        let mut node = Node::new(&config::Config::default());
+        let node = Node::new(&config::Config::default());
+        let mut node = node.shared();
         let height = Height::new(1, 1);
         let client_id = ClientId::from_str("UncleScrooge").unwrap();
         let client_state = dummy_client_state();

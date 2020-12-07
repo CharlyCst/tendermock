@@ -825,8 +825,8 @@ dependencies = [
 
 [[package]]
 name = "ibc"
-version = "0.0.4"
-source = "git+https://github.com/CharlyCst/ibc-rs?branch=charly/tonic-server#73020f9b036766011533d955fe49707abb2a5f96"
+version = "0.0.5"
+source = "git+https://github.com/CharlyCst/ibc-rs?branch=charly/tonic-server#c8a223bda86187be7a25ba907c618dc95b9b01d6"
 dependencies = [
  "anomaly",
  "bech32",
@@ -850,8 +850,8 @@ dependencies = [
 
 [[package]]
 name = "ibc-proto"
-version = "0.4.0"
-source = "git+https://github.com/CharlyCst/ibc-rs?branch=charly/tonic-server#73020f9b036766011533d955fe49707abb2a5f96"
+version = "0.5.0"
+source = "git+https://github.com/CharlyCst/ibc-rs?branch=charly/tonic-server#c8a223bda86187be7a25ba907c618dc95b9b01d6"
 dependencies = [
  "anomaly",
  "bytes 0.6.0",

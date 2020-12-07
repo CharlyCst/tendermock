@@ -10,12 +10,13 @@ use ibc::ics03_connection::context::{ConnectionKeeper, ConnectionReader};
 use ibc::ics03_connection::error::{Error as ConnectionError, Kind as ConnectionErrorKind};
 use ibc::ics23_commitment::commitment::CommitmentPrefix;
 use ibc::ics24_host::identifier::{ClientId, ConnectionId};
+use ibc::ics26_routing::context::ICS26Context;
 use ibc::Height;
 use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
-use serde::{Deserialize, Serialize};
-use serde_json;
 use prost::Message;
 use prost_types::Any;
+use serde::{Deserialize, Serialize};
+use serde_json;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use tendermint::chain;
@@ -110,6 +111,10 @@ impl<S: Storage> Node<S> {
         &self.store
     }
 
+    pub fn get_store_mut(&mut self) -> &mut S {
+        &mut self.store
+    }
+
     pub fn get_chain(&self) -> &Chain {
         &self.chain
     }
@@ -144,10 +149,12 @@ impl<S: Storage> Node<S> {
     }
 }
 
-impl<S: Storage> ClientReader for Node<S> {
+impl<S: Storage> ClientReader for SharedNode<S> {
     fn client_type(&self, client_id: &ClientId) -> Option<ClientType> {
         let path = format!("clients/{}/clientType", client_id.as_str());
-        let client_type = self.store.get(0, path.as_bytes())?;
+        let node = self.read();
+        let store = node.get_store();
+        let client_type = store.get(0, path.as_bytes())?;
         let client_type = String::from_utf8(client_type.to_vec());
         match client_type {
             Err(_) => None,
@@ -157,7 +164,9 @@ impl<S: Storage> ClientReader for Node<S> {
 
     fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {
         let path = format!("clients/{}/clientState", client_id.as_str());
-        let value = self.store.get(0, path.as_bytes())?;
+        let node = self.read();
+        let store = node.get_store();
+        let value = store.get(0, path.as_bytes())?;
         let client_state = Any {
             type_url: String::from(CLIENT_STATE_URL),
             value,
@@ -171,7 +180,9 @@ impl<S: Storage> ClientReader for Node<S> {
             client_id.as_str(),
             height.to_string()
         );
-        let value = self.store.get(0, path.as_bytes())?;
+        let node = self.read();
+        let store = node.get_store();
+        let value = store.get(0, path.as_bytes())?;
         let consensus_state = Any {
             type_url: String::from(CONSENSUS_STATE_URL),
             value,
@@ -180,14 +191,16 @@ impl<S: Storage> ClientReader for Node<S> {
     }
 }
 
-impl<S: Storage> ClientKeeper for Node<S> {
+impl<S: Storage> ClientKeeper for SharedNode<S> {
     fn store_client_type(
         &mut self,
         client_id: ClientId,
         client_type: ClientType,
     ) -> Result<(), ClientError> {
         let path = format!("clients/{}/clientType", client_id.as_str());
-        self.store.set(
+        let node = self.read();
+        let store = node.get_store();
+        store.set(
             0,
             path.as_bytes().to_owned(),
             client_type.as_string().as_bytes().to_owned(),
@@ -202,7 +215,9 @@ impl<S: Storage> ClientKeeper for Node<S> {
     ) -> Result<(), ClientError> {
         let path = format!("clients/{}/clientState", client_id.as_str());
         let data: Any = client_state.into();
-        self.store.set(0, path.into_bytes(), data.value);
+        let node = self.read();
+        let store = node.get_store();
+        store.set(0, path.into_bytes(), data.value);
         Ok(())
     }
 
@@ -218,12 +233,14 @@ impl<S: Storage> ClientKeeper for Node<S> {
             height.to_string()
         );
         let data: Any = consensus_state.into();
-        self.store.set(0, path.into_bytes(), data.value);
+        let node = self.read();
+        let store = node.get_store();
+        store.set(0, path.into_bytes(), data.value);
         Ok(())
     }
 }
 
-impl<S: Storage> ConnectionKeeper for Node<S> {
+impl<S: Storage> ConnectionKeeper for SharedNode<S> {
     fn store_connection(
         &mut self,
         connection_id: &ConnectionId,
@@ -233,7 +250,8 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
         let path = format!("connections/{}", connection_id.as_str());
         let raw: RawConnectionEnd = connection_end.to_owned().into();
         raw.encode(&mut buffer).unwrap();
-        self.get_store().set(0, path.into_bytes(), buffer);
+        let mut node = self.write();
+        node.get_store_mut().set(0, path.into_bytes(), buffer);
         Ok(())
     }
 
@@ -243,7 +261,8 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
         client_id: &ClientId,
     ) -> Result<(), ConnectionError> {
         let path = format!("clients/{}/connections", client_id.as_str());
-        let store = self.get_store();
+        let node = self.read();
+        let store = node.get_store();
         let connections = store.get(0, path.as_bytes()).unwrap_or(vec![]);
         let connections = String::from_utf8(connections).unwrap_or(String::from(""));
         let mut connections =
@@ -251,26 +270,27 @@ impl<S: Storage> ConnectionKeeper for Node<S> {
         connections
             .connections
             .push(connection_id.as_str().to_owned());
-        self.get_store()
-            .set(0, path.into_bytes(), connection_id.as_bytes().to_owned());
+        store.set(0, path.into_bytes(), connection_id.as_bytes().to_owned());
         Ok(())
     }
 }
 
-impl<S: Storage> ConnectionReader for Node<S> {
+impl<S: Storage> ConnectionReader for SharedNode<S> {
     fn connection_end(&self, connection_id: &ConnectionId) -> Option<ConnectionEnd> {
         let path = format!("connections/{}", connection_id.as_str());
-        let value = self.store.get(0, path.as_bytes())?;
+        let node = self.read();
+        let store = node.get_store();
+        let value = store.get(0, path.as_bytes())?;
         let raw = RawConnectionEnd::decode(&*value).ok()?;
         ConnectionEnd::try_from(raw).ok()
     }
 
     fn client_state(&self, client_id: &ClientId) -> Option<AnyClientState> {
-        <Node<S> as ClientReader>::client_state(self, client_id)
+        <SharedNode<S> as ClientReader>::client_state(self, client_id)
     }
 
     fn host_current_height(&self) -> Height {
-        self.chain.get_height()
+        self.read().chain.get_height()
     }
 
     fn host_chain_history_size(&self) -> usize {
@@ -290,7 +310,7 @@ impl<S: Storage> ConnectionReader for Node<S> {
     }
 
     fn host_consensus_state(&self, height: Height) -> Option<AnyConsensusState> {
-        let host_id = ClientId::from_str(&self.host_client_id).unwrap();
+        let host_id = ClientId::from_str(&self.read().host_client_id).unwrap();
         self.consensus_state(&host_id, height)
     }
 
@@ -311,6 +331,8 @@ impl<S: Storage> ConnectionReader for Node<S> {
         }
     }
 }
+
+impl<S: Storage> ICS26Context for SharedNode<S> {}
 
 /// A type representing connections in memory
 #[derive(Serialize, Deserialize)]

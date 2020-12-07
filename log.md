@@ -192,3 +192,5 @@ Spend the last few days to work on websockets:
 - I added a new server using Warm to handle websocket, but it had to run on a different port than the jrpc API (which uses another framework)
 - To bypass this issue, I build a small jrpc framework using Warp, now both websockets and jrpc runs on the same server (and thus same port).
 - Cleaned up the old stuff and dependencies.
+
+On another theme, I added support for b`roadcast_tx_commit`, but the TxResult is not yet implemented.

@@ -1,4 +1,7 @@
 /// The Tendermock JsonRPC API.
+use ibc::ics26_routing::handler::deliver;
+use ibc_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
+use prost::Message;
 use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
@@ -45,7 +48,9 @@ where
     S: 'static + store::Storage,
     node::SharedNode<S>: Sync + Send + Clone,
 {
-    pub fn new(verbose: bool, node: node::SharedNode<S>
+    pub fn new(
+        verbose: bool,
+        node: node::SharedNode<S>,
     ) -> impl warp::Filter<Extract = (String,), Error = warp::Rejection> + Clone {
         let state = Self { verbose, node };
         JrpcFilter::new(state)
@@ -189,11 +194,19 @@ where
 
     /// JsonRPC /broadcast_tx_commit endpoint.
     fn broadcast_tx_commit(
-        _req: BroadcastTxCommitRequest,
-        state: Self,
+        req: BroadcastTxCommitRequest,
+        mut state: Self,
     ) -> JrpcResult<BroadcastTxCommitResponse> {
-        let node = state.node.write();
-        node.get_chain().grow();
-        todo!();
+        {
+            // Release write lock after use
+            let node = state.node.write();
+            node.get_chain().grow();
+        }
+        let data: Vec<u8> = req.tx.into();
+        let tx_raw = TxRaw::decode(&*data).map_err(|_| JrpcError::InvalidRequest)?;
+        let tx_body = TxBody::decode(&*tx_raw.body_bytes).map_err(|_| JrpcError::InvalidRequest)?;
+        deliver(&mut state.node, tx_body.messages).map_err(|_| JrpcError::ServerError)?;
+        println!("TxResult not yet implemented.");
+        unimplemented!();
     }
 }

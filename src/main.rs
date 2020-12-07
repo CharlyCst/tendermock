@@ -28,9 +28,9 @@ fn main() {
     } else {
         config::Config::default()
     };
-    let mut node = node::Node::new(&config);
+    let node = node::Node::new(&config);
+    let mut node = node.shared();
     init::init(&mut node, &config);
-    let node = node.shared();
 
     // Automatically grow the chain
     let block_interval = args.block;
