@@ -1,7 +1,4 @@
-// use ibc::ics26_routing::handler::deliver_tx;
-use jsonrpc_core::{serde_json, Error as JsonError, Params, Result as JsonResult};
-use jsonrpc_derive::rpc;
-use std::sync::{Arc, RwLock};
+/// The Tendermock JsonRPC API.
 use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
@@ -20,69 +17,63 @@ use crate::chain::to_full_block;
 use crate::node;
 use crate::store;
 
+use super::utils::{JrpcError, JrpcFilter, JrpcResult};
+
 const PUBLICK_KEY: &str = "4A25C6640A1F72B9C975338294EF51B6D1C33158BB6ECBA69FBC3FB5A33C9DCE";
 
-#[rpc(server)]
-pub trait Rpc {
-    #[rpc(name = "block", params = "raw")]
-    fn block(&self, req: Params) -> JsonResult<BlockResponse>;
-
-    #[rpc(name = "commit", params = "raw")]
-    fn commit(&self, req: Params) -> JsonResult<CommitResponse>;
-
-    #[rpc(name = "genesis", params = "raw")]
-    fn genesis(&self, req: Params) -> JsonResult<GenesisResponse>;
-
-    #[rpc(name = "validators", params = "raw")]
-    fn validators(&self, req: Params) -> JsonResult<ValidatorResponse>;
-
-    #[rpc(name = "abci_info", params = "raw")]
-    fn abci_info(&self, req: Params) -> JsonResult<AbciInfoResponse>;
-
-    #[rpc(name = "abci_query", params = "raw")]
-    fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse>;
-
-    #[rpc(name = "status", params = "raw")]
-    fn status(&self, req: Params) -> JsonResult<StatusResponse>;
-
-    #[rpc(name = "broadcast_tx_commit", params = "raw")]
-    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse>;
+/// Shared state of the JsonRPC API.
+pub struct Jrpc<S: store::Storage>
+where
+    node::SharedNode<S>: Clone,
+{
+    pub verbose: bool,
+    pub node: node::SharedNode<S>,
 }
 
-
-/// A JsonRPC server.
-pub struct Server<S: store::Storage> {
-    verbose: bool,
-    node: node::SharedNode<S>,
-}
-
-impl<S: store::Storage> Server<S> {
-    pub fn new(verbose: bool, node: node::Node<S>) -> Self {
-        let node = Arc::new(RwLock::new(node));
-        Server { verbose, node }
-    }
-
-    pub fn get_node(&self) -> node::SharedNode<S> {
-        self.node.clone()
+// See this [issue](https://github.com/rust-lang/rust/issues/41481)
+impl<S: store::Storage> Clone for Jrpc<S> {
+    fn clone(&self) -> Self {
+        Self {
+            verbose: self.verbose,
+            node: self.node.clone(),
+        }
     }
 }
 
-impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
+impl<S> Jrpc<S>
+where
+    S: 'static + store::Storage,
+    node::SharedNode<S>: Sync + Send + Clone,
+{
+    pub fn new(verbose: bool, node: node::SharedNode<S>
+    ) -> impl warp::Filter<Extract = (String,), Error = warp::Rejection> + Clone {
+        let state = Self { verbose, node };
+        JrpcFilter::new(state)
+            .add("block", Self::block)
+            .add("commit", Self::commit)
+            .add("genesis", Self::genesis)
+            .add("validators", Self::validators)
+            .add("status", Self::status)
+            .add("abci_info", Self::abci_info)
+            .add("abci_query", Self::abci_query)
+            .add("broadcast_tx_commit", Self::broadcast_tx_commit)
+            .build()
+    }
+
     /// JsonRPC /block endpoint.
-    fn block(&self, req: Params) -> JsonResult<BlockResponse> {
-        let req: BlockRequest = parse(req)?;
-        if self.verbose {
+    fn block(req: BlockRequest, state: Self) -> JrpcResult<BlockResponse> {
+        if state.verbose {
             println!("JsonRPC /block      {:?}", req);
         }
         let height = match req.height {
             None => 0,
             Some(height) => height.into(),
         };
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         let block = node
             .get_chain()
             .get_block(height)
-            .ok_or_else(|| JsonError::invalid_request())?;
+            .ok_or_else(|| JrpcError::InvalidRequest)?;
         let tm_block = to_full_block(block);
         let hash = tm_block.header.hash();
         Ok(BlockResponse {
@@ -95,20 +86,19 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     }
 
     /// JsonRPC /commit endpoint.
-    fn commit(&self, req: Params) -> JsonResult<CommitResponse> {
-        let req: CommitRequest = parse(req)?;
-        if self.verbose {
+    fn commit(req: CommitRequest, state: Self) -> JrpcResult<CommitResponse> {
+        if state.verbose {
             println!("JsonRPC /commit     {:?}", req);
         }
         let height = match req.height {
             None => 0,
             Some(height) => height.into(),
         };
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         let block = node
             .get_chain()
             .get_block(height)
-            .ok_or_else(|| JsonError::invalid_request())?;
+            .ok_or_else(|| JrpcError::InvalidRequest)?;
         let signed_header = block.signed_header;
         Ok(CommitResponse {
             signed_header,
@@ -117,12 +107,11 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     }
 
     /// JsonRPC /genesis endpoint.
-    fn genesis(&self, req: Params) -> JsonResult<GenesisResponse> {
-        let req: GenesisRequest = parse(req)?;
-        if self.verbose {
+    fn genesis(req: GenesisRequest, state: Self) -> JrpcResult<GenesisResponse> {
+        if state.verbose {
             println!("JsonRPC /genesis     {:?}", req);
         }
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         let genesis_block = node.get_chain().get_block(1).unwrap();
         let genesis = tendermint::Genesis {
             genesis_time: genesis_block.signed_header.header.time,
@@ -136,16 +125,15 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     }
 
     /// JsonRPC /validators endpoint.
-    fn validators(&self, req: Params) -> JsonResult<ValidatorResponse> {
-        let req: ValidatorsRequest = parse(req)?;
-        if self.verbose {
+    fn validators(req: ValidatorsRequest, state: Self) -> JrpcResult<ValidatorResponse> {
+        if state.verbose {
             println!("JsonRPC /validators {:?}", req);
         }
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         let block = node
             .get_chain()
             .get_block(req.height.into())
-            .ok_or_else(|| JsonError::invalid_request())?;
+            .ok_or_else(|| JrpcError::InvalidRequest)?;
         let validators = block.validators.validators().clone();
         Ok(ValidatorResponse {
             block_height: Height::from(1 as u32),
@@ -154,12 +142,11 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     }
 
     /// JsonRPC /status endpoint.
-    fn status(&self, req: Params) -> JsonResult<StatusResponse> {
-        let req: StatusRequest = parse(req)?;
-        if self.verbose {
+    fn status(req: StatusRequest, state: Self) -> JrpcResult<StatusResponse> {
+        if state.verbose {
             println!("JsonRPC /status     {:?}", req);
         }
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         let node_info = node.get_info().clone();
         let sync_info = node.get_sync_info();
         let validator_info = tendermint::validator::Info {
@@ -179,47 +166,34 @@ impl<S: 'static + store::Storage + Sync + Send> Rpc for Server<S> {
     }
 
     /// JsonRPC /abci_info endpoint.
-    fn abci_info(&self, req: Params) -> JsonResult<AbciInfoResponse> {
-        let req: AbciInfoRequest = parse(req)?;
-        if self.verbose {
+    fn abci_info(req: AbciInfoRequest, state: Self) -> JrpcResult<AbciInfoResponse> {
+        if state.verbose {
             println!("JsonRPC /abci_info  {:?}", req);
         }
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         Ok(AbciInfoResponse {
             response: abci::get_info(&node),
         })
     }
 
     /// JsonRPC /abci_query endpoint.
-    fn abci_query(&self, req: Params) -> JsonResult<AbciQueryResponse> {
-        let req: AbciQueryRequest = parse(req)?;
-        if self.verbose {
+    fn abci_query(req: AbciQueryRequest, state: Self) -> JrpcResult<AbciQueryResponse> {
+        if state.verbose {
             println!("JsonRPC /abci_query {:?}", req);
         }
-        let node = self.node.read().unwrap();
+        let node = state.node.read();
         Ok(AbciQueryResponse {
             response: abci::handle_query(req, &node),
         })
     }
 
     /// JsonRPC /broadcast_tx_commit endpoint.
-    fn broadcast_tx_commit(&self, req: Params) -> JsonResult<BroadcastTxCommitResponse> {
-        let _req: BroadcastTxCommitRequest = parse(req)?;
-        let node = self.node.write().unwrap();
+    fn broadcast_tx_commit(
+        _req: BroadcastTxCommitRequest,
+        state: Self,
+    ) -> JrpcResult<BroadcastTxCommitResponse> {
+        let node = state.node.write();
         node.get_chain().grow();
         todo!();
     }
-}
-
-/// Deserializes raw parameters of a JsonRPC request.
-fn parse<T>(params: Params) -> Result<T, JsonError>
-where
-    T: jsonrpc_core::serde::de::DeserializeOwned,
-{
-    let params = match params {
-        Params::None => serde_json::Value::Null,
-        Params::Array(vals) => serde_json::Value::Array(vals),
-        Params::Map(val) => serde_json::Value::Object(val),
-    };
-    serde_json::from_value(params).map_err(|err| JsonError::invalid_params(err.to_string()))
 }

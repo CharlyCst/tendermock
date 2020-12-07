@@ -184,3 +184,11 @@ gRPC is not as easy to test as a simple curl might be, that's why I had to add i
 ## December 3
 
 - Work on websocket endpoint
+
+## December 7
+
+Spend the last few days to work on websockets:
+
+- I added a new server using Warm to handle websocket, but it had to run on a different port than the jrpc API (which uses another framework)
+- To bypass this issue, I build a small jrpc framework using Warp, now both websockets and jrpc runs on the same server (and thus same port).
+- Cleaned up the old stuff and dependencies.

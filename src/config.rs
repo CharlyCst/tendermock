@@ -1,4 +1,4 @@
-use jsonrpc_core::serde_json;
+use serde_json;
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;

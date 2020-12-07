@@ -12,8 +12,8 @@ use ibc::ics23_commitment::commitment::CommitmentPrefix;
 use ibc::ics24_host::identifier::{ClientId, ConnectionId};
 use ibc::Height;
 use ibc_proto::ibc::core::connection::v1::ConnectionEnd as RawConnectionEnd;
-use jsonrpc_core::serde::{Deserialize, Serialize};
-use jsonrpc_core::serde_json;
+use serde::{Deserialize, Serialize};
+use serde_json;
 use prost::Message;
 use prost_types::Any;
 use std::convert::TryFrom;
@@ -26,26 +26,36 @@ use tendermint_rpc::endpoint::status::SyncInfo;
 // protobuf URL
 const CONSENSUS_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ConsensusState";
 const CLIENT_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ClientState";
-
 // System constant
 const COMMITMENT_PREFIX: &'static str = "store/ibc/key";
 
-pub type SharedNode<S> = std::sync::Arc<std::sync::RwLock<Node<S>>>;
-
-/// A type representing connections in memory
-#[derive(Serialize, Deserialize)]
-struct Connections {
-    pub connections: Vec<String>,
+/// An `Arc<RwLock<>>` wrapper around a Node.
+pub struct SharedNode<S: Storage> {
+    node: std::sync::Arc<std::sync::RwLock<Node<S>>>,
 }
 
-impl Connections {
-    pub fn new() -> Self {
-        Connections {
-            connections: Vec::new(),
+impl<S: Storage> Clone for SharedNode<S> {
+    fn clone(&self) -> Self {
+        Self {
+            node: std::sync::Arc::clone(&self.node),
         }
     }
 }
 
+// See this [issue](https://github.com/rust-lang/rust/issues/41481)
+impl<S: Storage> SharedNode<S> {
+    /// Read lock acquisition.
+    pub fn read(&self) -> std::sync::RwLockReadGuard<Node<S>> {
+        self.node.read().unwrap()
+    }
+
+    /// Write lock acquisition.
+    pub fn write(&self) -> std::sync::RwLockWriteGuard<Node<S>> {
+        self.node.write().unwrap()
+    }
+}
+
+/// A node contains a store, a chain and some meta-data.
 pub struct Node<S: Storage> {
     store: S,
     chain: Chain,
@@ -85,6 +95,12 @@ impl Node<InMemoryStore> {
             host_client_id: config.host_client.id.to_owned(),
             consensus_params: config.consensus_params.clone(),
             info,
+        }
+    }
+
+    pub fn shared(self) -> SharedNode<InMemoryStore> {
+        SharedNode {
+            node: std::sync::Arc::new(std::sync::RwLock::new(self)),
         }
     }
 }
@@ -292,6 +308,20 @@ impl<S: Storage> ConnectionReader for Node<S> {
         match counterparty_candidate_versions.get(0) {
             Some(version) => Ok(version.to_owned()),
             None => Err(ConnectionErrorKind::NoCommonVersion.into()),
+        }
+    }
+}
+
+/// A type representing connections in memory
+#[derive(Serialize, Deserialize)]
+struct Connections {
+    pub connections: Vec<String>,
+}
+
+impl Connections {
+    pub fn new() -> Self {
+        Connections {
+            connections: Vec::new(),
         }
     }
 }

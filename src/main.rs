@@ -1,9 +1,8 @@
 use futures::future::FutureExt;
 use futures::try_join;
-use jsonrpc_core::IoHandler;
-use jsonrpc_http_server::ServerBuilder;
 use tokio;
 use warp;
+use warp::Filter as _;
 
 mod abci;
 mod avl;
@@ -13,13 +12,14 @@ mod config;
 mod data;
 mod grpc;
 mod init;
-mod json_rpc;
+mod jrpc;
 mod node;
 mod store;
 mod test_node;
-mod websockets;
 
-use json_rpc::Rpc;
+use jrpc::{Ws, Jrpc};
+
+pub const WEBSOCKET_PATH: &str = "websocket";
 
 fn main() {
     let args = cli::get_args();
@@ -30,32 +30,20 @@ fn main() {
     };
     let mut node = node::Node::new(&config);
     init::init(&mut node, &config);
-    let server = json_rpc::Server::new(args.verbose, node);
+    let node = node.shared();
 
     // Automatically grow the chain
-    let node = server.get_node();
     let block_interval = args.block;
     let verbose = args.verbose;
     let growth_node = node.clone();
     std::thread::spawn(move || schedule_growth(growth_node, block_interval, verbose));
 
-    // Start JsonRpc server
-    println!("Starting JsonRPC");
-    let mut io = IoHandler::new();
-    io.extend_with(server.to_delegate());
-    let server = ServerBuilder::new(io)
-        .start_http(
-            &format!("127.0.0.1:{}", args.json_port)
-                .parse()
-                .expect("Invalid IP address or port"),
-        )
-        .expect("Unable to start RPC server");
-
-    // WebSocket server
-    let ws = websockets::new();
-    let ws_server = warp::serve(ws)
+    // JsonRPC server
+    let jrpc_api = warp::path::end().and(Jrpc::new(args.verbose, node.clone()));
+    let ws = warp::path(WEBSOCKET_PATH).and(Ws::new());
+    let jrpc_server = warp::serve(jrpc_api.or(ws))
         .run(
-            format!("127.0.0.1:{}", args.json_port + 1)
+            format!("127.0.0.1:{}", args.json_port)
                 .parse::<std::net::SocketAddr>()
                 .expect("Invalid IP address or port"),
         )
@@ -69,9 +57,8 @@ fn main() {
     // Start servers
     tokio::runtime::Runtime::new()
         .unwrap()
-        .block_on(async { try_join!(ws_server, grpc_server) })
+        .block_on(async { try_join!(jrpc_server, grpc_server) })
         .unwrap();
-    server.wait();
 }
 
 /// Push a new block on the chain every `interval` seconds.
@@ -81,7 +68,7 @@ pub fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u
     }
     loop {
         std::thread::sleep(std::time::Duration::from_secs(interval));
-        let node = node.write().unwrap();
+        let node = node.write();
         node.get_chain().grow();
         if verbose {
             let block = node.get_chain().get_block(0).unwrap();
