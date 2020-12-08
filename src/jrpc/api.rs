@@ -1,18 +1,19 @@
-/// The Tendermock JsonRPC API.
+//! The Tendermock JsonRPC HTTP API.
 use ibc::ics26_routing::handler::deliver;
 use ibc_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use prost::Message;
+use tendermint::abci::{transaction::Hash, Code};
 use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
     abci_query::Request as AbciQueryRequest, abci_query::Response as AbciQueryResponse,
     block::Request as BlockRequest, block::Response as BlockResponse,
     broadcast::tx_commit::Request as BroadcastTxCommitRequest,
-    broadcast::tx_commit::Response as BroadcastTxCommitResponse, commit::Request as CommitRequest,
-    commit::Response as CommitResponse, genesis::Request as GenesisRequest,
-    genesis::Response as GenesisResponse, status::Request as StatusRequest,
-    status::Response as StatusResponse, validators::Request as ValidatorsRequest,
-    validators::Response as ValidatorResponse,
+    broadcast::tx_commit::Response as BroadcastTxCommitResponse, broadcast::tx_commit::TxResult,
+    commit::Request as CommitRequest, commit::Response as CommitResponse,
+    genesis::Request as GenesisRequest, genesis::Response as GenesisResponse,
+    status::Request as StatusRequest, status::Response as StatusResponse,
+    validators::Request as ValidatorsRequest, validators::Response as ValidatorResponse,
 };
 
 use crate::abci;
@@ -23,8 +24,9 @@ use crate::store;
 use super::utils::{JrpcError, JrpcFilter, JrpcResult};
 
 const PUBLICK_KEY: &str = "4A25C6640A1F72B9C975338294EF51B6D1C33158BB6ECBA69FBC3FB5A33C9DCE";
+const HASH_LENGHT: usize = 32; // tendermint::abci::transaction::hash::LENGHT is not exposed...
 
-/// Shared state of the JsonRPC API.
+/// A structure to build the JsonRPC HTTP API, see the `new` method.
 pub struct Jrpc<S: store::Storage>
 where
     node::SharedNode<S>: Clone,
@@ -48,6 +50,7 @@ where
     S: 'static + store::Storage,
     node::SharedNode<S>: Sync + Send + Clone,
 {
+    /// Creates a new `warp` filter that mimics Tendermint's JsonRPC HTTP API.
     pub fn new(
         verbose: bool,
         node: node::SharedNode<S>,
@@ -197,16 +200,29 @@ where
         req: BroadcastTxCommitRequest,
         mut state: Self,
     ) -> JrpcResult<BroadcastTxCommitResponse> {
-        {
-            // Release write lock after use
-            let node = state.node.write();
-            node.get_chain().grow();
-        }
+        // Grow chain
+        let node = state.node.write();
+        node.get_chain().grow();
+        let block = node.get_chain().get_block(0).unwrap();
+        drop(node); // Release write lock
+
+        // Build transactions
         let data: Vec<u8> = req.tx.into();
         let tx_raw = TxRaw::decode(&*data).map_err(|_| JrpcError::InvalidRequest)?;
         let tx_body = TxBody::decode(&*tx_raw.body_bytes).map_err(|_| JrpcError::InvalidRequest)?;
         deliver(&mut state.node, tx_body.messages).map_err(|_| JrpcError::ServerError)?;
-        println!("TxResult not yet implemented.");
-        unimplemented!();
+
+        // Build a response, for now with arbitrary values.
+        let tx_result = TxResult {
+            code: Code::Ok,
+            data: None,
+            log: "Success".into(),
+        };
+        Ok(BroadcastTxCommitResponse {
+            check_tx: tx_result.clone(),
+            deliver_tx: tx_result,
+            hash: Hash::new([61; HASH_LENGHT]),
+            height: block.signed_header.header.height,
+        })
     }
 }

@@ -1,3 +1,7 @@
+//! # A JsonRPC mini-framework.
+//!
+//! This module provides a small framework for building JsonRPC API on top of a `wrap` filter, this
+//! is done through the builder methods of `JrpcFilter`.
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -40,12 +44,14 @@ pub enum JrpcError {
     InvalidRequest,
 }
 
+/// JsonRPC error details.
 #[derive(Serialize)]
 struct JrpcErrorDetails {
     code: i32,
     message: String,
 }
 
+/// JsonRPC response.
 #[derive(Serialize)]
 struct JrpcResponse<T> {
     jsonrpc: String,
