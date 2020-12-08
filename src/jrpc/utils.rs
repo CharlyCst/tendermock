@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use warp::filters;
 use warp::Filter;
 
-const JRPC_VERSION: &str = "2.0";
+pub const JRPC_VERSION: &str = "2.0";
 const JRPC_CODE_METHOD_NOT_FOUND: i32 = -32601;
 const JRPC_CODE_INVALID_PARAMS: i32 = -32605;
 const JRPC_CODE_INVALID_REQUEST: i32 = -32600;
@@ -18,11 +18,11 @@ const JRPC_CODE_SERVER_ERROR: i32 = -32000;
 /// JsonRPC envelope.
 #[derive(Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
-struct JrpcEnvelope {
-    jsonrpc: String,
-    id: String,
-    method: String,
-    params: Value,
+pub struct JrpcEnvelope {
+    pub jsonrpc: String,
+    pub id: String,
+    pub method: String,
+    pub params: Value,
 }
 
 /// JsonRPC context.
@@ -46,20 +46,20 @@ pub enum JrpcError {
 
 /// JsonRPC error details.
 #[derive(Serialize)]
-struct JrpcErrorDetails {
+pub struct JrpcErrorDetails {
     code: i32,
     message: String,
 }
 
 /// JsonRPC response.
 #[derive(Serialize)]
-struct JrpcResponse<T> {
-    jsonrpc: String,
-    id: String,
+pub struct JrpcResponse<T> {
+    pub jsonrpc: String,
+    pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    result: Option<T>,
+    pub result: Option<T>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    error: Option<JrpcErrorDetails>,
+    pub error: Option<JrpcErrorDetails>,
 }
 
 pub type JrpcResult<T> = Result<T, JrpcError>;
