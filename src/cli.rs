@@ -21,7 +21,7 @@ pub struct Args {
     pub config: Option<String>,
 
     /// Seconds between two blocks, 0 for no growth
-    #[clap(short, long, default_value = "3")]
+    #[clap(short, long, default_value = "20")]
     pub block: u64,
 }
 

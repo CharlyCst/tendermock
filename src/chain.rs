@@ -32,7 +32,7 @@ impl Chain {
         block.generate().ok()
     }
 
-    /// Grows the chain by adding a new block.
+    /// Grow the chain by adding a new block.
     pub fn grow(&self) -> Option<()> {
         let mut blocks = self.blocks.write().unwrap();
         let last_block = blocks
@@ -45,6 +45,22 @@ impl Chain {
             .unwrap()
             .as_secs();
         header_ref.time = Some(now);
+        blocks.push(next_block);
+        Some(())
+    }
+
+    /// Grow the chain by adding a new block, the block will appear as if it had beend added at
+    /// `time`.
+    ///
+    /// `time` must be an Unix timestamp.
+    pub fn grow_at(&self, time: u64) -> Option<()> {
+        let mut blocks = self.blocks.write().unwrap();
+        let last_block = blocks
+            .last()
+            .expect("[Internal] Chain should be initialized with a block.");
+        let mut next_block = last_block.next();
+        let mut header_ref = next_block.header.as_mut().unwrap();
+        header_ref.time = Some(time);
         blocks.push(next_block);
         Some(())
     }

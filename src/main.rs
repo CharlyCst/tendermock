@@ -17,7 +17,7 @@ mod node;
 mod store;
 mod test_node;
 
-use jrpc::{Ws, Jrpc};
+use jrpc::{Jrpc, Ws};
 
 pub const WEBSOCKET_PATH: &str = "websocket";
 
@@ -50,11 +50,12 @@ fn main() {
         .then(|()| async { Ok(()) });
 
     // gRPC server
-    println!("Starting gRPC");
     let addr = format!("[::1]:{}", &args.grpc_port).parse().unwrap();
     let grpc_server = grpc::new(node).serve(addr);
 
     // Start servers
+    println!("[gRPC] Starting server on port: {}", &args.grpc_port);
+    println!("[JsonRPC] Starting server on port: {}", &args.json_port);
     tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(async { try_join!(jrpc_server, grpc_server) })
@@ -62,18 +63,41 @@ fn main() {
 }
 
 /// Push a new block on the chain every `interval` seconds.
-pub fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u64, verbose: bool) {
+fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u64, verbose: bool) {
     if interval == 0 {
         return;
     }
+    // Add a block as if it was added last midnight (UTC).
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let midnight = now - (now % 86_400);
+    let node_ref = node.write();
+    node_ref.get_chain().grow_at(midnight);
+    drop(node_ref);
+    if verbose {
+        display_last_block(&node);
+    }
     loop {
         std::thread::sleep(std::time::Duration::from_secs(interval));
-        let node = node.write();
-        node.get_chain().grow();
+        let node_ref = node.write();
+        node_ref.get_chain().grow();
+        drop(node_ref);
         if verbose {
-            let block = node.get_chain().get_block(0).unwrap();
-            let header = block.signed_header.header;
-            println!("height: {} - hash: {}", header.height, &header.hash());
+            display_last_block(&node);
         }
     }
+}
+
+/// Displays the last block of the node's chain.
+fn display_last_block<S: store::Storage>(node: &node::SharedNode<S>) {
+    let node = node.read();
+    let block = node.get_chain().get_block(0).unwrap();
+    let header = block.signed_header.header;
+    println!(
+        "[Chain] Height: {} - Hash: {}",
+        header.height,
+        &header.hash()
+    );
 }
