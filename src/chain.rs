@@ -25,7 +25,7 @@ impl Chain {
             .last()
             .expect("[Internal] Chain should be initialized with a block.")
             .height();
-        Height::new(1, std::cmp::max(height -1, 0))
+        Height::new(1, std::cmp::max(height -1, 1))
     }
 
     /// Returns a Tendermint Light Block or None if no block exist at that height.
@@ -103,8 +103,11 @@ mod test {
         assert_eq!(height.version_height, 1);
         chain.grow();
         let height = chain.get_height();
-        assert_eq!(height.version_height, 2);
+        assert_eq!(height.version_height, 1); // The now block is not yet validated
         let block = chain.get_block(2);
-        assert!(block.is_some());
+        assert!(block.is_some()); // But still, it should exist.
+        chain.grow();
+        let height = chain.get_height();
+        assert_eq!(height.version_height, 2); // Now the second block is valid
     }
 }
