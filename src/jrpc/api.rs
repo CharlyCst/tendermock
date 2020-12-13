@@ -71,7 +71,7 @@ where
     /// JsonRPC /block endpoint.
     fn block(req: BlockRequest, state: Self) -> JrpcResult<BlockResponse> {
         if state.verbose {
-            println!("JsonRPC /block      {:?}", req);
+            println!("[JsonRPC] /block      {:?}", req);
         }
         let height = match req.height {
             None => 0,
@@ -96,7 +96,7 @@ where
     /// JsonRPC /commit endpoint.
     fn commit(req: CommitRequest, state: Self) -> JrpcResult<CommitResponse> {
         if state.verbose {
-            println!("JsonRPC /commit     {:?}", req);
+            println!("[JsonRPC] /commit     {:?}", req);
         }
         let height = match req.height {
             None => 0,
@@ -117,7 +117,7 @@ where
     /// JsonRPC /genesis endpoint.
     fn genesis(req: GenesisRequest, state: Self) -> JrpcResult<GenesisResponse> {
         if state.verbose {
-            println!("JsonRPC /genesis     {:?}", req);
+            println!("[JsonRPC] /genesis     {:?}", req);
         }
         let node = state.node.read();
         let genesis_block = node.get_chain().get_block(1).unwrap();
@@ -126,7 +126,7 @@ where
             chain_id: node.get_chain_id().clone(),
             consensus_params: node.get_consensus_params().clone(),
             validators: genesis_block.validators.validators().clone(),
-            app_hash: vec![],
+            app_hash: vec![100, 200],
             app_state: serde_json::Value::Null,
         };
         Ok(GenesisResponse { genesis })
@@ -135,7 +135,7 @@ where
     /// JsonRPC /validators endpoint.
     fn validators(req: ValidatorsRequest, state: Self) -> JrpcResult<ValidatorResponse> {
         if state.verbose {
-            println!("JsonRPC /validators {:?}", req);
+            println!("[JsonRPC] /validators {:?}", req);
         }
         let node = state.node.read();
         let block = node
@@ -152,7 +152,7 @@ where
     /// JsonRPC /status endpoint.
     fn status(req: StatusRequest, state: Self) -> JrpcResult<StatusResponse> {
         if state.verbose {
-            println!("JsonRPC /status     {:?}", req);
+            println!("[JsonRPC] /status     {:?}", req);
         }
         let node = state.node.read();
         let node_info = node.get_info().clone();
@@ -176,7 +176,7 @@ where
     /// JsonRPC /abci_info endpoint.
     fn abci_info(req: AbciInfoRequest, state: Self) -> JrpcResult<AbciInfoResponse> {
         if state.verbose {
-            println!("JsonRPC /abci_info  {:?}", req);
+            println!("[JsonRPC] /abci_info  {:?}", req);
         }
         let node = state.node.read();
         Ok(AbciInfoResponse {
@@ -187,7 +187,7 @@ where
     /// JsonRPC /abci_query endpoint.
     fn abci_query(req: AbciQueryRequest, state: Self) -> JrpcResult<AbciQueryResponse> {
         if state.verbose {
-            println!("JsonRPC /abci_query {:?}", req);
+            println!("[JsonRPC] /abci_query {:?}", req);
         }
         let node = state.node.read();
         Ok(AbciQueryResponse {
@@ -200,6 +200,9 @@ where
         req: BroadcastTxCommitRequest,
         mut state: Self,
     ) -> JrpcResult<BroadcastTxCommitResponse> {
+        if state.verbose {
+            println!("[JsonRPC] /broadcast_tx_commit {:?}", req);
+        }
         // Grow chain
         let node = state.node.write();
         node.get_chain().grow();

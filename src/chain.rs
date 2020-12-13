@@ -16,13 +16,16 @@ impl Chain {
     }
 
     /// Returns the height of the chain.
+    ///
+    /// The height is defined as the height of the latest validated blocks, that is not the last
+    /// block but the one just before.
     pub fn get_height(&self) -> Height {
         let blocks = self.blocks.read().unwrap();
         let height = blocks
             .last()
             .expect("[Internal] Chain should be initialized with a block.")
             .height();
-        Height::new(1, height)
+        Height::new(1, std::cmp::max(height -1, 0))
     }
 
     /// Returns a Tendermint Light Block or None if no block exist at that height.
