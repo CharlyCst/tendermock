@@ -48,7 +48,7 @@ Run the following commands:
 
 ```sh
 cargo doc --no-deps
-rm -rf doc
-mv target/doc doc
+rm -rf docs
+mv target/doc docs
 ```
 
