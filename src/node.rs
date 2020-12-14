@@ -43,7 +43,6 @@ impl<S: Storage> Clone for SharedNode<S> {
     }
 }
 
-// See this [issue](https://github.com/rust-lang/rust/issues/41481)
 impl<S: Storage> SharedNode<S> {
     /// Read lock acquisition.
     pub fn read(&self) -> std::sync::RwLockReadGuard<Node<S>> {
@@ -99,6 +98,7 @@ impl Node<InMemoryStore> {
         }
     }
 
+    /// Return the node in an Arc<RwLock> wrapper, ready to be shared among threads.
     pub fn shared(self) -> SharedNode<InMemoryStore> {
         SharedNode {
             node: std::sync::Arc::new(std::sync::RwLock::new(self)),
