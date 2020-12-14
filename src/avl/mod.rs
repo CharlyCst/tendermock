@@ -1,4 +1,16 @@
-/// A simple in-memory AVL tree implementation.
+//! # AVL Tree
+//!
+//! This module hosts a simple implementation of an AVL Merkle Tree that support the `get` and
+//! `insert` instructions (no delete yet, it's not needed as the on-chain store is supposed to be
+//! immutable).
+//!
+//! Proof of existence are supported using [ICS23](https://github.com/confio/ics23), but proof of
+//! non-existence are not yet implemented.
+//!
+//! Keys needs to implement `Ord` and `AsBytes` (see `as_bytes` module), while values are required
+//! to implement `Borrow<[u8]>`.
+//!
+//! For more info, see [AVL Tree on wikipedia](https://en.wikipedia.org/wiki/AVL_tree),
 use ics23::commitment_proof::Proof;
 use ics23::{CommitmentProof, ExistenceProof, HashOp, InnerOp, LeafOp, LengthOp};
 use sha2::{Digest, Sha256};
@@ -17,6 +29,7 @@ const HASH_ALGO: Algorithm = Algorithm::Sha256;
 
 type NodeRef<T, V> = Option<Box<AvlNode<T, V>>>;
 
+/// A node in the AVL Tree.
 #[derive(Eq, PartialEq, Debug)]
 struct AvlNode<K: Ord, V> {
     key: K,
@@ -28,11 +41,14 @@ struct AvlNode<K: Ord, V> {
     right: NodeRef<K, V>,
 }
 
+/// An AVL Tree that supports `get` and `insert` operation and can be used to prove existence of a
+/// given key-value couple.
 #[derive(PartialEq, Eq, Debug)]
 pub struct AvlTree<K: Ord + AsBytes, V> {
     root: NodeRef<K, V>,
 }
 
+/// Wrap a key + value couple into a `NodeRef`.
 fn as_node_ref<K: Ord + AsBytes, V>(key: K, value: V) -> NodeRef<K, V>
 where
     V: Borrow<[u8]>,
@@ -140,7 +156,7 @@ impl<K: Ord + AsBytes, V> AvlTree<K, V>
 where
     V: Borrow<[u8]>,
 {
-    /// Return an ampty AVL tree.
+    /// Return an empty AVL tree.
     pub fn new() -> Self {
         AvlTree { root: None }
     }
@@ -174,7 +190,7 @@ where
         AvlTree::insert_rec(node_ref, key, value);
     }
 
-    /// Insert a value and return the node height.
+    /// Insert a value in the tree.
     fn insert_rec(node_ref: &mut NodeRef<K, V>, key: K, value: V) {
         if let Some(node) = node_ref {
             match node.key.cmp(&key) {
@@ -202,6 +218,7 @@ where
         })
     }
 
+    /// Recursively build a proof of existence for the desired value.
     fn get_proof_rec<Q: ?Sized>(&self, key: &Q, node: &NodeRef<K, V>) -> Option<ExistenceProof>
     where
         K: Borrow<Q>,

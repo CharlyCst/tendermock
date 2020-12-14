@@ -1,4 +1,4 @@
-// Tests related to AVL Tree correctness
+//! # Test suite of tendermock AVL Tree.
 
 #[cfg(test)]
 mod tests {

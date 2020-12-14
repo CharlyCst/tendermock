@@ -1,3 +1,12 @@
+//! # Configuration
+//!
+//! This module handles the loading of tendermock configuration, which describes the content of the
+//! genesis block.
+//!
+//! For now the configuration options are rather limited, but those can be extended by adding new
+//! fields to the `Config` structs.
+//!
+//! The deserialization uses `serde` and `serde_json` to define and parse json config files.
 use serde_json;
 use serde::Deserialize;
 use std::fs;

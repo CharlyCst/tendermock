@@ -1,3 +1,7 @@
+//! # Command line interface
+//!
+//! This module defines the command line interface of the tendermock executable, it is built on top
+//! of [clap](https://github.com/clap-rs/clap).
 use clap::Clap;
 
 #[derive(Clap)]

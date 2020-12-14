@@ -1,3 +1,6 @@
+//! # Tendermock
+//!
+//! A tendermint mocked node.
 use futures::future::FutureExt;
 use futures::try_join;
 use tokio;
@@ -9,7 +12,6 @@ mod avl;
 mod chain;
 mod cli;
 mod config;
-mod data;
 mod grpc;
 mod init;
 mod jrpc;

@@ -1,3 +1,7 @@
+//! # ABCI interface
+//!
+//! This modules handles operations of the ABCI interface, which mostly interact with the on-chain
+//! store.
 use tendermint::abci::{Code, Log};
 use tendermint::block;
 use tendermint_rpc::endpoint::{
@@ -7,6 +11,7 @@ use tendermint_rpc::endpoint::{
 use crate::node::Node;
 use crate::store::Storage;
 
+/// Return information about the ABCI API.
 pub fn get_info<S: Storage>(node: &Node<S>) -> AbciInfo {
     let chain = node.get_chain();
     // TODO: inject valid informations
@@ -21,6 +26,7 @@ pub fn get_info<S: Storage>(node: &Node<S>) -> AbciInfo {
     }
 }
 
+/// Handle an ABCI query, 
 pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> AbciQuery {
     println!(
         "ABCI data: {}",

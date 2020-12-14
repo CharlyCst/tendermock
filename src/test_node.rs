@@ -1,3 +1,4 @@
+//! Tests for a tendermock node.
 #[cfg(test)]
 mod tests {
     use crate::config;

@@ -1,3 +1,7 @@
+//! # Chain
+//!
+//! This modules defines the tendermock chain. The chain is a vector of light blocks, which are
+//! stripped down versions of full blown tendermint blocks.
 use ibc::Height;
 use std::sync::RwLock;
 use tendermint::Block as TMBlock;

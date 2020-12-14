@@ -1,3 +1,9 @@
+//! # Storage initialization
+//!
+//! This modules initializes the storage, by inserting values into the node using the ICS26
+//! interface.
+//!
+//! The initial values are taken fron the configuration (see `config` module).
 use crate::config::{Client, Config};
 use ibc::ics02_client::client_def::AnyClientState;
 use ibc::ics02_client::client_type::ClientType;
