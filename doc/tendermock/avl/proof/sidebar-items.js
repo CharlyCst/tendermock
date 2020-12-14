@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["LEAF_PREFIX",""]],"fn":[["get_proof_spec","Return the `ProofSpec` of tendermock AVL Tree."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["AsBytes","A trait for objects that can be interpreted as a slice of bytes."]]});

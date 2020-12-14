@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["to_full_block","Build a Tendermint block from a Tendermint loght block."]],"struct":[["Blocks",""],["Chain",""]]});

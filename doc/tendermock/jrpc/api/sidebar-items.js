@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["HASH_LENGHT",""],["PUBLICK_KEY",""]],"struct":[["Jrpc","A structure to build the JsonRPC HTTP API, see the `new` method."]]});

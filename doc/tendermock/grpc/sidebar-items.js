@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["new","Create a new gRPC server."]],"struct":[["QueryService","A struct handling the `Query` service."]],"type":[["GrpcServer",""]]});

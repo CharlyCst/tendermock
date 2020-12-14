@@ -42,3 +42,13 @@ A few example queries are available in `./queries`, the node can easily be queri
 curl -X POST -H 'Content-Type: application/json' -d @queries/block.json 127.0.0.1:26657/ | jq
 ```
 
+## Building the doc
+
+Run the following commands:
+
+```sh
+cargo doc --no-deps
+rm -rf doc
+mv target/doc doc
+```
+
