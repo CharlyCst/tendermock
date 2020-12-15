@@ -201,3 +201,10 @@ On another theme, I added support for b`roadcast_tx_commit`, but the TxResult is
 - Added a github action to test tendermock on push.
 - Fixed a few issues needed for integration with IBC (non empty App Data for instance).
 - Add a "pending block" in the chain, this block is not considered to be valid.
+
+## December 15
+
+- Add crate documentation.
+- Add Dockerfile, build a Linux Alpine container.
+
+
