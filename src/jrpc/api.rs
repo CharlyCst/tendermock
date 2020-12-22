@@ -3,7 +3,6 @@ use ibc::ics26_routing::handler::deliver;
 use ibc_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use prost::Message;
 use tendermint::abci::{transaction::Hash, Code};
-use tendermint::block::Height;
 use tendermint_rpc::endpoint::{
     abci_info::Request as AbciInfoRequest, abci_info::Response as AbciInfoResponse,
     abci_query::Request as AbciQueryRequest, abci_query::Response as AbciQueryResponse,
@@ -144,7 +143,7 @@ where
             .ok_or_else(|| JrpcError::InvalidRequest)?;
         let validators = block.validators.validators().clone();
         Ok(ValidatorResponse {
-            block_height: Height::from(1 as u32),
+            block_height: block.signed_header.header.height,
             validators,
         })
     }

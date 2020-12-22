@@ -34,7 +34,7 @@ fn add_client<T: ClientKeeper>(keeper: &mut T, client: &Client, config: &Config)
 }
 
 fn new_client_state(config: &Config) -> AnyClientState {
-    let duration = std::time::Duration::new(60, 0);
+    let duration = std::time::Duration::new(3600 * 24 * 30, 0);
     let height = Height::new(1, 1);
     let client_state = ClientState {
         chain_id: String::from(&config.chain_id),

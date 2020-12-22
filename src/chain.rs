@@ -43,8 +43,8 @@ impl Chain {
 
     /// Returns a Tendermint Light Block or None if no block exist at that height.
     pub fn get_block(&self, height: u64) -> Option<TMLightBlock> {
-        let blocks = &self.blocks.read().unwrap().chain;
-        let block = Chain::get_block_at_height(height, &blocks)?;
+        let chain = &self.blocks.read().unwrap();
+        let block = Chain::get_block_at_height(height, &chain.chain, &chain.pending_block)?;
         block.generate().ok()
     }
 
@@ -78,9 +78,16 @@ impl Chain {
     }
 
     /// Returns the store at a given height, where 0 means latest.
-    fn get_block_at_height(height: u64, blocks: &Vec<LightBlock>) -> Option<&LightBlock> {
+    fn get_block_at_height<'a>(
+        height: u64,
+        blocks: &'a Vec<LightBlock>,
+        pending: &'a Option<LightBlock>,
+    ) -> Option<&'a LightBlock> {
         if height == 0 {
             blocks.last()
+        } else if height == (blocks.len() + 1) as u64 {
+            // Preview of the next (not yet validated) block
+            pending.as_ref()
         } else {
             blocks.get((height - 1) as usize)
         }
@@ -115,7 +122,7 @@ mod test {
         let height = chain.get_height();
         assert_eq!(height.version_height, 1); // The now block is not yet validated
         let block = chain.get_block(2);
-        assert!(block.is_none()); // Should we be able to retrieve invalid block? For now it's not possible.
+        assert!(block.is_some()); // The second block is not yet valid, but we can retrieve it anyway
         chain.grow();
         let height = chain.get_height();
         assert_eq!(height.version_height, 2); // Now the second block is valid

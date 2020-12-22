@@ -1,6 +1,6 @@
 use ibc_proto::cosmos::staking::v1beta1::query_client::QueryClient;
 use ibc_proto::cosmos::staking::v1beta1::QueryParamsRequest;
-/// Integration tests for tendermock gRPC server.
+/// Integration tests for tendermock JsonRPC and gRPC server.
 use std::process::{Command, Stdio};
 use tokio;
 use tonic;
