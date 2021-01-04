@@ -5,6 +5,8 @@ use crate::node;
 use crate::store::Storage;
 use ibc_proto::cosmos::auth::v1beta1;
 use ibc_proto::cosmos::auth::v1beta1::query_server::{Query, QueryServer};
+use prost::Message;
+use prost_types::Any;
 
 pub fn get_service<S: 'static + Storage + Sync + Send>(
     node: node::SharedNode<S>,
@@ -35,19 +37,23 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryAccountRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryAccountResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] /account {:?}", request);
+            println!("[gRPC] auth/account {:?}", request);
         }
-        // let response = v1beta1::QueryAccountResponse {
-        //     account: Some(v1beta1::BaseAccount {
-        //         address: String::from("ACCOUNT_ADDRESS"),
-        //         pub_key: None,
-        //         account_number: 42,
-        //         sequence: 42,
-        //     }),
-        // };
-        let response = v1beta1::QueryAccountResponse {
-            account: None,
+        let base_account = v1beta1::BaseAccount {
+            address: String::from("ACCOUNT_ADDRESS"),
+            pub_key: None,
+            account_number: 42,
+            sequence: 42,
         };
+        let mut buffer = Vec::new();
+        base_account.encode(&mut buffer).unwrap();
+        let response = v1beta1::QueryAccountResponse {
+            account: Some(Any {
+                type_url: String::from("TODO!"), // TODO: What is the `BaseAccount` url?
+                value: buffer,
+            }),
+        };
+        //let response = v1beta1::QueryAccountResponse { account: None };
         Ok(tonic::Response::new(response))
     }
 
@@ -56,7 +62,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryParamsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryParamsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] /params {:?}", request);
+            println!("[gRPC] auth/params {:?}", request);
         }
         unimplemented!()
     }

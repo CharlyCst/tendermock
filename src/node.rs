@@ -5,7 +5,7 @@
 //! interfaces.
 //!
 //! To integrate with IBC modules, the node implements the `ICS26Context` traits, which mainly deal
-//! with interacting with storing and reading values.
+//! with storing and reading values from the store.
 use crate::chain::Chain;
 use crate::config::Config;
 use crate::store::{InMemoryStore, Storage};
