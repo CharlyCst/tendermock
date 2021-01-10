@@ -53,20 +53,12 @@ fn main() {
 
 /// Push a new block on the chain every `interval` seconds.
 fn schedule_growth<S: store::Storage>(node: node::SharedNode<S>, interval: u64, verbose: bool) {
-    if interval == 0 {
-        return;
-    }
-    // Add a block as if it was added last midnight (UTC).
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-    let midnight = now - (now % 86_400);
-    let node_ref = node.write();
-    node_ref.get_chain().grow_at(midnight);
-    drop(node_ref);
+    node.grow();
     if verbose {
         display_last_block(&node);
+    }
+    if interval == 0 {
+        return;
     }
     loop {
         std::thread::sleep(std::time::Duration::from_secs(interval));

@@ -12,7 +12,7 @@ use crate::store::{InMemoryStore, Storage};
 use ibc::ics02_client::client_def::{AnyClientState, AnyConsensusState};
 use ibc::ics02_client::client_type::ClientType;
 use ibc::ics02_client::context::{ClientKeeper, ClientReader};
-use ibc::ics02_client::error::Error as ClientError;
+use ibc::ics02_client::error::{Error as ClientError, Kind as ClientErrorKind};
 use ibc::ics03_connection::connection::ConnectionEnd;
 use ibc::ics03_connection::context::{ConnectionKeeper, ConnectionReader};
 use ibc::ics03_connection::error::{Error as ConnectionError, Kind as ConnectionErrorKind};
@@ -30,11 +30,9 @@ use std::str::FromStr;
 use tendermint::chain;
 use tendermint::net::Address;
 use tendermint::node;
+use tendermint_proto::Protobuf;
 use tendermint_rpc::endpoint::status::SyncInfo;
 
-// protobuf URL
-const CONSENSUS_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ConsensusState";
-const CLIENT_STATE_URL: &'static str = "/ibc.lightclients.tendermint.v1.ClientState";
 // System constant
 const COMMITMENT_PREFIX: &'static str = "store/ibc/key";
 
@@ -61,12 +59,17 @@ impl<S: Storage> SharedNode<S> {
     pub fn write(&self) -> std::sync::RwLockWriteGuard<Node<S>> {
         self.node.write().unwrap()
     }
+
+    /// Grow the chain.
+    #[allow(dead_code)]
+    pub fn grow(&self) {
+        self.node.write().unwrap().grow();
+    }
 }
 
 /// A node contains a store, a chain and some meta-data.
 pub struct Node<S: Storage> {
-    store: S,
-    chain: Chain,
+    chain: Chain<S>,
     chain_id: tendermint::chain::Id,
     host_client_id: String,
     info: node::Info,
@@ -97,8 +100,7 @@ impl Node<InMemoryStore> {
             },
         };
         Node {
-            store: InMemoryStore::new(),
-            chain: Chain::new(),
+            chain: Chain::new(InMemoryStore::new()),
             chain_id: tendermint::chain::Id::try_from(config.chain_id.to_owned()).unwrap(),
             host_client_id: config.host_client.id.to_owned(),
             consensus_params: config.consensus_params.clone(),
@@ -116,14 +118,10 @@ impl Node<InMemoryStore> {
 
 impl<S: Storage> Node<S> {
     pub fn get_store(&self) -> &S {
-        &self.store
+        &self.chain.get_store()
     }
 
-    pub fn get_store_mut(&mut self) -> &mut S {
-        &mut self.store
-    }
-
-    pub fn get_chain(&self) -> &Chain {
+    pub fn get_chain(&self) -> &Chain<S> {
         &self.chain
     }
 
@@ -137,6 +135,10 @@ impl<S: Storage> Node<S> {
 
     pub fn get_consensus_params(&self) -> &tendermint::consensus::Params {
         &self.consensus_params
+    }
+
+    pub fn grow(&self) {
+        self.chain.grow();
     }
 
     /// Get sync infos. For now only the field `latest_block_height` contains a valid value.
@@ -175,11 +177,8 @@ impl<S: Storage> ClientReader for SharedNode<S> {
         let node = self.read();
         let store = node.get_store();
         let value = store.get(0, path.as_bytes())?;
-        let client_state = Any {
-            type_url: String::from(CLIENT_STATE_URL),
-            value,
-        };
-        AnyClientState::try_from(client_state).ok()
+        let client_state = AnyClientState::decode(value.as_slice());
+        client_state.ok()
     }
 
     fn consensus_state(&self, client_id: &ClientId, height: Height) -> Option<AnyConsensusState> {
@@ -191,11 +190,8 @@ impl<S: Storage> ClientReader for SharedNode<S> {
         let node = self.read();
         let store = node.get_store();
         let value = store.get(0, path.as_bytes())?;
-        let consensus_state = Any {
-            type_url: String::from(CONSENSUS_STATE_URL),
-            value,
-        };
-        AnyConsensusState::try_from(consensus_state).ok()
+        let consensus_state = AnyConsensusState::decode(value.as_slice());
+        consensus_state.ok()
     }
 }
 
@@ -209,8 +205,7 @@ impl<S: Storage> ClientKeeper for SharedNode<S> {
         let node = self.read();
         let store = node.get_store();
         store.set(
-            0,
-            path.as_bytes().to_owned(),
+            path.into_bytes(),
             client_type.as_string().as_bytes().to_owned(),
         );
         Ok(())
@@ -223,9 +218,12 @@ impl<S: Storage> ClientKeeper for SharedNode<S> {
     ) -> Result<(), ClientError> {
         let path = format!("clients/{}/clientState", client_id.as_str());
         let data: Any = client_state.into();
+        let mut buffer = Vec::new();
+        data.encode(&mut buffer)
+            .map_err(|e| ClientErrorKind::InvalidRawClientState.context(e))?;
         let node = self.read();
         let store = node.get_store();
-        store.set(0, path.into_bytes(), data.value);
+        store.set(path.into_bytes(), buffer);
         Ok(())
     }
 
@@ -241,9 +239,12 @@ impl<S: Storage> ClientKeeper for SharedNode<S> {
             height.to_string()
         );
         let data: Any = consensus_state.into();
+        let mut buffer = Vec::new();
+        data.encode(&mut buffer)
+            .map_err(|e| ClientErrorKind::InvalidRawConsensusState.context(e))?;
         let node = self.read();
         let store = node.get_store();
-        store.set(0, path.into_bytes(), data.value);
+        store.set(path.into_bytes(), buffer);
         Ok(())
     }
 }
@@ -258,8 +259,8 @@ impl<S: Storage> ConnectionKeeper for SharedNode<S> {
         let path = format!("connections/{}", connection_id.as_str());
         let raw: RawConnectionEnd = connection_end.to_owned().into();
         raw.encode(&mut buffer).unwrap();
-        let mut node = self.write();
-        node.get_store_mut().set(0, path.into_bytes(), buffer);
+        let node = self.write();
+        node.get_store().set(path.into_bytes(), buffer);
         Ok(())
     }
 
@@ -278,7 +279,7 @@ impl<S: Storage> ConnectionKeeper for SharedNode<S> {
         connections
             .connections
             .push(connection_id.as_str().to_owned());
-        store.set(0, path.into_bytes(), connection_id.as_bytes().to_owned());
+        store.set(path.into_bytes(), connection_id.as_bytes().to_owned());
         Ok(())
     }
 }

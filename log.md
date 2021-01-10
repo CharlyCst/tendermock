@@ -208,3 +208,18 @@ On another theme, I added support for b`roadcast_tx_commit`, but the TxResult is
 - Add Dockerfile, build a Linux Alpine container.
 
 
+## End-December
+
+-There was a crash on client creation, the reason was that the Auth gRCP service was missing, I had to create it and return dummy values to get the client creation running.
+- I Refactored the way servers are handled, so that gRPC and JsonRPC works more or less the same, this makes the code much easier to understand.
+
+## January 7
+
+- There is a crash on client update, the client type is not valid: "clientB". We should return "07-tendermint". See [this file](https://github.com/informalsystems/ibc-rs/blob/db2be6f72fef647933f48d80b29a0f9f12c804d4/modules/src/ics02_client/client_def.rs#L199)
+
+## January 10
+
+- Refactoring: the chain now owns both the blocks and the storage, this make things easier to hangle new blocks as the chain can take care of updating both the blocks and the stora.
+- Hit a blocker: `create-client` does not create a client type (see [here](https://github.com/informalsystems/ibc-rs/blob/9c5d4f60732db62626cd7163f7e3b87f9f3c289a/modules/src/ics02_client/handler/update_client.rs#L33)) but `update-client` expects one (see [here](https://github.com/informalsystems/ibc-rs/blob/9c5d4f60732db62626cd7163f7e3b87f9f3c289a/modules/src/ics02_client/handler/update_client.rs#L33)). Who is responsible for creating the client type???
+
+

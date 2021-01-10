@@ -206,13 +206,17 @@ where
         let node = state.node.write();
         node.get_chain().grow();
         let block = node.get_chain().get_block(0).unwrap();
+        println!("DEBUG: {:?}", node.get_store());
         drop(node); // Release write lock
 
         // Build transactions
         let data: Vec<u8> = req.tx.into();
         let tx_raw = TxRaw::decode(&*data).map_err(|_| JrpcError::InvalidRequest)?;
         let tx_body = TxBody::decode(&*tx_raw.body_bytes).map_err(|_| JrpcError::InvalidRequest)?;
-        deliver(&mut state.node, tx_body.messages).map_err(|_| JrpcError::ServerError)?;
+        deliver(&mut state.node, tx_body.messages).map_err(|e| {
+            println!("[JsonRPC] deliver error: '{}'", e);
+            JrpcError::ServerError
+        })?;
 
         // Build a response, for now with arbitrary values.
         let tx_result = TxResult {

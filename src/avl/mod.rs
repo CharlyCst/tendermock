@@ -30,7 +30,7 @@ const HASH_ALGO: Algorithm = Algorithm::Sha256;
 type NodeRef<T, V> = Option<Box<AvlNode<T, V>>>;
 
 /// A node in the AVL Tree.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 struct AvlNode<K: Ord, V> {
     key: K,
     value: V,
@@ -43,7 +43,7 @@ struct AvlNode<K: Ord, V> {
 
 /// An AVL Tree that supports `get` and `insert` operation and can be used to prove existence of a
 /// given key-value couple.
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct AvlTree<K: Ord + AsBytes, V> {
     root: NodeRef<K, V>,
 }
@@ -327,5 +327,21 @@ where
         std::mem::swap(&mut right.left, &mut Some(node));
         right.update();
         std::mem::swap(root, &mut Some(right))
+    }
+
+    /// Return a list of the keys present in the tree.
+    #[allow(dead_code)]
+    pub fn get_keys(&self) -> Vec<&K> {
+        let mut keys = Vec::new();
+        Self::get_keys_rec(&self.root, &mut keys);
+        keys
+    }
+
+    fn get_keys_rec<'a ,'b>(node_ref: &'a NodeRef<K, V>, keys: &'b mut Vec<&'a K>) {
+        if let Some(node) = node_ref {
+            Self::get_keys_rec(&node.left, keys);
+            keys.push(&node.key);
+            Self::get_keys_rec(&node.right, keys);
+        }
     }
 }

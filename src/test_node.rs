@@ -27,19 +27,19 @@ mod tests {
         let client_state = dummy_client_state();
         let consensus_state = dummy_consensus_state();
 
-        // ClientType
         node.store_client_type(client_id.clone(), ClientType::Tendermint)
             .unwrap();
-        let client_type = node.client_type(&client_id).unwrap();
-        assert_eq!(client_type, ClientType::Tendermint);
-        // ClientState
         node.store_client_state(client_id.clone(), client_state.clone())
             .unwrap();
-        let retrieved_client = node.client_state(&client_id).unwrap();
-        assert_eq!(client_state, retrieved_client);
-        // ConsensusState
         node.store_consensus_state(client_id.clone(), height.clone(), consensus_state.clone())
             .unwrap();
+        println!("{:?}", node.read().get_store());
+        node.grow();
+        println!("{:?}", node.read().get_store());
+        let client_type = node.client_type(&client_id).unwrap();
+        assert_eq!(client_type, ClientType::Tendermint);
+        let retrieved_client = node.client_state(&client_id).unwrap();
+        assert_eq!(client_state, retrieved_client);
         let retrieved_consensus = node.consensus_state(&client_id, height).unwrap();
         assert_eq!(consensus_state, retrieved_consensus);
     }
