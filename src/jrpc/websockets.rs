@@ -7,6 +7,7 @@ use warp::ws::{Message, WebSocket, Ws as WarpWs};
 use warp::Filter;
 
 use super::utils::{JrpcEnvelope, JrpcError, JrpcResponse, JrpcResult, JRPC_VERSION};
+use crate::logger::Log;
 
 /// A struct that can be used to build the Websocket `warp` filter, see the `new` method.
 pub struct Ws {}
@@ -22,30 +23,30 @@ impl Ws {
 
 /// Handle a websocket connection.
 async fn handler(ws: WebSocket) {
-    println!("[Websocket] Connection");
+    log!(Log::Websocket, "Connection");
     let (mut sending_ws, mut listening_ws) = ws.split();
     while let Some(result) = listening_ws.next().await {
         let msg = match result {
             Ok(msg) => msg,
             Err(e) => {
-                println!("[Websocket] Receiving error: '{}'", e);
+                log!(Log::Websocket, "Receiving error: '{}'", e);
                 break;
             }
         };
         let msg = if let Ok(msg) = msg.to_str() {
             msg
         } else {
-            println!("[Websocket] Could not interpret message as str");
+            log!(Log::Websocket, "Could not interpret message as str");
             break;
         };
         if let Err(e) = sending_ws.send(Message::text(handle_request(msg))).await {
-            println!("[Websocket] Sending error: '{}'", e);
+            log!(Log::Websocket, "Sending error: '{}'", e);
             break;
         };
     }
     if let Ok(ws) = sending_ws.reunite(listening_ws) {
         if let Err(e) = ws.close().await {
-            println!("[Websocket] Closing error: '{}'", e);
+            log!(Log::Websocket, "Closing error: '{}'", e);
         };
     };
 }

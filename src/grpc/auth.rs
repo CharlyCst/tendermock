@@ -2,6 +2,7 @@
 //!
 //! The auth tendermint gRPC API.
 use crate::node;
+use crate::logger::Log;
 use crate::store::Storage;
 use ibc_proto::cosmos::auth::v1beta1;
 use ibc_proto::cosmos::auth::v1beta1::query_server::{Query, QueryServer};
@@ -37,7 +38,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryAccountRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryAccountResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] auth/account {:?}", request);
+            log!(Log::GRPC, "/auth/account {:?}", request);
         }
         let base_account = v1beta1::BaseAccount {
             address: String::from("ACCOUNT_ADDRESS"),
@@ -62,7 +63,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryParamsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryParamsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] auth/params {:?}", request);
+            log!(Log::GRPC, "/auth/params {:?}", request);
         }
         unimplemented!()
     }

@@ -4,6 +4,9 @@
 use futures::try_join;
 use tokio;
 
+#[macro_use]
+mod logger;
+
 mod abci;
 mod avl;
 mod chain;
@@ -15,6 +18,8 @@ mod jrpc;
 mod node;
 mod store;
 mod test_node;
+
+use logger::Log;
 
 fn main() {
     // Parse cli arguments & initialize store
@@ -43,8 +48,8 @@ fn main() {
     let grpc_server = grpc::serve(node, args.verbose, addr);
 
     // Start servers
-    println!("[gRPC] Starting server on port: {}", &args.grpc_port);
-    println!("[JsonRPC] Starting server on port: {}", &args.json_port);
+    log!(Log::GRPC, "Starting server on port: {}", &args.grpc_port);
+    log!(Log::JRPC, "Starting server on port: {}", &args.json_port);
     tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(async { try_join!(jrpc_server, grpc_server) })
@@ -76,8 +81,9 @@ fn display_last_block<S: store::Storage>(node: &node::SharedNode<S>) {
     let node = node.read();
     let block = node.get_chain().get_block(0).unwrap();
     let header = block.signed_header.header;
-    println!(
-        "[Chain] Height: {} - Hash: {}",
+    log!(
+        Log::Chain,
+        "Height: {} - Hash: {}",
         header.height,
         &header.hash()
     );

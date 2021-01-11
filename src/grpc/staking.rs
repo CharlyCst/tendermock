@@ -1,6 +1,7 @@
 //! # gRPC Staking
 //!
 //! The staking tendermint gRPC API.
+use crate::logger::Log;
 use crate::node;
 use crate::store::Storage;
 use ibc_proto::cosmos::staking::v1beta1;
@@ -35,7 +36,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryValidatorRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryValidatorResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/validator {:?}", request);
+            log!(Log::GRPC, "/staking/validator {:?}", request);
         }
         unimplemented!();
     }
@@ -45,7 +46,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryValidatorsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryValidatorsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/validators {:?}", request);
+            log!(Log::GRPC, "/staking/validators {:?}", request);
         }
         unimplemented!();
     }
@@ -55,7 +56,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryValidatorDelegationsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryValidatorDelegationsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/validator_delegations {:?}", request);
+            log!(Log::GRPC, "/staking/validator_delegations {:?}", request);
         }
         unimplemented!();
     }
@@ -66,7 +67,11 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
     ) -> Result<tonic::Response<v1beta1::QueryValidatorUnbondingDelegationsResponse>, tonic::Status>
     {
         if self.verbose {
-            println!("[gRPC] staking/validator_unbounding_delegations {:?}", request);
+            log!(
+                Log::GRPC,
+                "/staking/validator_unbounding_delegations {:?}",
+                request
+            );
         }
         unimplemented!();
     }
@@ -76,7 +81,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryDelegationRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryDelegationResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/delegation {:?}", request);
+            log!(Log::GRPC, "/staking/delegation {:?}", request);
         }
         unimplemented!();
     }
@@ -86,7 +91,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryUnbondingDelegationRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryUnbondingDelegationResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/unbounding_delegation {:?}", request);
+            log!(Log::GRPC, "/staking/unbounding_delegation {:?}", request);
         }
         unimplemented!();
     }
@@ -96,7 +101,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryDelegatorValidatorRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryDelegatorValidatorResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/delegator_validator {:?}", request);
+            log!(Log::GRPC, "/staking/delegator_validator {:?}", request);
         }
         unimplemented!();
     }
@@ -106,7 +111,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryDelegatorDelegationsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryDelegatorDelegationsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/delegator_delegations {:?}", request);
+            log!(Log::GRPC, "/staking/delegator_delegations {:?}", request);
         }
         unimplemented!();
     }
@@ -117,7 +122,11 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
     ) -> Result<tonic::Response<v1beta1::QueryDelegatorUnbondingDelegationsResponse>, tonic::Status>
     {
         if self.verbose {
-            println!("[gRPC] staking/delegator_unbounding_delegations {:?}", request);
+            log!(
+                Log::GRPC,
+                "/staking/delegator_unbounding_delegations {:?}",
+                request
+            );
         }
         unimplemented!();
     }
@@ -127,7 +136,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryRedelegationsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryRedelegationsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/redelegations {:?}", request);
+            log!(Log::GRPC, "/staking/redelegations {:?}", request);
         }
         unimplemented!();
     }
@@ -137,7 +146,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryDelegatorValidatorsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryDelegatorValidatorsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/delegator_validators {:?}", request);
+            log!(Log::GRPC, "/staking/delegator_validators {:?}", request);
         }
         unimplemented!();
     }
@@ -147,7 +156,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryHistoricalInfoRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryHistoricalInfoResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/historical_info {:?}", request);
+            log!(Log::GRPC, "/staking/historical_info {:?}", request);
         }
         unimplemented!();
     }
@@ -157,7 +166,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryPoolRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryPoolResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/pool   {:?}", request);
+            log!(Log::GRPC, "/staking/pool   {:?}", request);
         }
         unimplemented!();
     }
@@ -167,7 +176,7 @@ impl<S: 'static + Storage + Sync + Send> Query for QueryService<S> {
         request: tonic::Request<v1beta1::QueryParamsRequest>,
     ) -> Result<tonic::Response<v1beta1::QueryParamsResponse>, tonic::Status> {
         if self.verbose {
-            println!("[gRPC] staking/params {:?}", request);
+            log!(Log::GRPC, "/staking/params {:?}", request);
         }
         let response = v1beta1::QueryParamsResponse {
             params: Some(v1beta1::Params {

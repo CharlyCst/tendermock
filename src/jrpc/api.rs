@@ -15,6 +15,7 @@ use tendermint_rpc::endpoint::{
     validators::Request as ValidatorsRequest, validators::Response as ValidatorResponse,
 };
 
+use crate::logger::Log;
 use crate::abci;
 use crate::chain::to_full_block;
 use crate::node;
@@ -70,7 +71,7 @@ where
     /// JsonRPC /block endpoint.
     fn block(req: BlockRequest, state: Self) -> JrpcResult<BlockResponse> {
         if state.verbose {
-            println!("[JsonRPC] /block      {:?}", req);
+            log!(Log::JRPC, "/block      {:?}", req);
         }
         let height = match req.height {
             None => 0,
@@ -95,7 +96,7 @@ where
     /// JsonRPC /commit endpoint.
     fn commit(req: CommitRequest, state: Self) -> JrpcResult<CommitResponse> {
         if state.verbose {
-            println!("[JsonRPC] /commit     {:?}", req);
+            log!(Log::JRPC, "/commit     {:?}", req);
         }
         let height = match req.height {
             None => 0,
@@ -116,7 +117,7 @@ where
     /// JsonRPC /genesis endpoint.
     fn genesis(req: GenesisRequest, state: Self) -> JrpcResult<GenesisResponse> {
         if state.verbose {
-            println!("[JsonRPC] /genesis     {:?}", req);
+            log!(Log::JRPC, "/genesis    {:?}", req);
         }
         let node = state.node.read();
         let genesis_block = node.get_chain().get_block(1).unwrap();
@@ -134,7 +135,7 @@ where
     /// JsonRPC /validators endpoint.
     fn validators(req: ValidatorsRequest, state: Self) -> JrpcResult<ValidatorResponse> {
         if state.verbose {
-            println!("[JsonRPC] /validators {:?}", req);
+            log!(Log::JRPC, "/validators {:?}", req);
         }
         let node = state.node.read();
         let block = node
@@ -151,7 +152,7 @@ where
     /// JsonRPC /status endpoint.
     fn status(req: StatusRequest, state: Self) -> JrpcResult<StatusResponse> {
         if state.verbose {
-            println!("[JsonRPC] /status     {:?}", req);
+            log!(Log::JRPC, "/status     {:?}", req);
         }
         let node = state.node.read();
         let node_info = node.get_info().clone();
@@ -175,7 +176,7 @@ where
     /// JsonRPC /abci_info endpoint.
     fn abci_info(req: AbciInfoRequest, state: Self) -> JrpcResult<AbciInfoResponse> {
         if state.verbose {
-            println!("[JsonRPC] /abci_info  {:?}", req);
+            log!(Log::JRPC, "/abci_info  {:?}", req);
         }
         let node = state.node.read();
         Ok(AbciInfoResponse {
@@ -186,7 +187,7 @@ where
     /// JsonRPC /abci_query endpoint.
     fn abci_query(req: AbciQueryRequest, state: Self) -> JrpcResult<AbciQueryResponse> {
         if state.verbose {
-            println!("[JsonRPC] /abci_query {:?}", req);
+            log!(Log::JRPC, "/abci_query {:?}", req);
         }
         let node = state.node.read();
         Ok(AbciQueryResponse {
@@ -200,13 +201,12 @@ where
         mut state: Self,
     ) -> JrpcResult<BroadcastTxCommitResponse> {
         if state.verbose {
-            println!("[JsonRPC] /broadcast_tx_commit {:?}", req);
+            log!(Log::JRPC, "/broadcast_tx_commit {:?}", req);
         }
         // Grow chain
         let node = state.node.write();
         node.get_chain().grow();
         let block = node.get_chain().get_block(0).unwrap();
-        println!("DEBUG: {:?}", node.get_store());
         drop(node); // Release write lock
 
         // Build transactions
@@ -214,7 +214,7 @@ where
         let tx_raw = TxRaw::decode(&*data).map_err(|_| JrpcError::InvalidRequest)?;
         let tx_body = TxBody::decode(&*tx_raw.body_bytes).map_err(|_| JrpcError::InvalidRequest)?;
         deliver(&mut state.node, tx_body.messages).map_err(|e| {
-            println!("[JsonRPC] deliver error: '{}'", e);
+            log!(Log::JRPC, "deliver error: '{}'", e);
             JrpcError::ServerError
         })?;
 

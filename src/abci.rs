@@ -2,12 +2,13 @@
 //!
 //! This modules handles operations of the ABCI interface, which mostly interact with the on-chain
 //! store.
-use tendermint::abci::{Code, Log};
+use tendermint::abci::{Code, Log as AbciLog};
 use tendermint::block;
 use tendermint_rpc::endpoint::{
     abci_info::AbciInfo, abci_query::AbciQuery, abci_query::Request as AbciQueryRequest,
 };
 
+use crate::logger::Log;
 use crate::node::Node;
 use crate::store::Storage;
 
@@ -26,10 +27,10 @@ pub fn get_info<S: Storage>(node: &Node<S>) -> AbciInfo {
     }
 }
 
-/// Handle an ABCI query, 
+/// Handle an ABCI query.
 pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> AbciQuery {
-    println!(
-        "ABCI data: {}",
+    log!(Log::ABCI,
+        "data: {}",
         String::from_utf8(query.data.clone()).unwrap_or("".to_string())
     );
     let height = match query.height {
@@ -41,7 +42,7 @@ pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> Abci
     if let Some(item) = item {
         AbciQuery {
             code: Code::Ok,
-            log: Log::from("exists"),
+            log: AbciLog::from("exists"),
             info: "".to_string(),
             index: 0,
             key: query.data,
@@ -53,7 +54,7 @@ pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> Abci
     } else {
         AbciQuery {
             code: Code::Err(1),
-            log: Log::from("data do not exist"),
+            log: AbciLog::from("data do not exist"),
             info: "Data not found".to_string(),
             index: 0,
             key: query.data,
