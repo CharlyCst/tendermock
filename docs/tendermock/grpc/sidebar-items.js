@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["new","Create a new gRPC server."]],"struct":[["QueryService","A struct handling the `Query` service."]],"type":[["GrpcServer",""]]});
+initSidebarItems({"fn":[["serve","Create a new gRPC server."]],"mod":[["auth","gRPC Auth"],["staking","gRPC Staking"]]});

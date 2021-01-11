@@ -103,6 +103,7 @@
 <span id="102">102</span>
 <span id="103">103</span>
 <span id="104">104</span>
+<span id="105">105</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! The Tendermock JsonRPC Websocket API.</span>
 <span class="kw">use</span> <span class="ident">futures</span>::{<span class="ident">SinkExt</span>, <span class="ident">StreamExt</span>};
@@ -113,6 +114,7 @@
 <span class="kw">use</span> <span class="ident">warp</span>::<span class="ident">Filter</span>;
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">utils</span>::{<span class="ident">JrpcEnvelope</span>, <span class="ident">JrpcError</span>, <span class="ident">JrpcResponse</span>, <span class="ident">JrpcResult</span>, <span class="ident">JRPC_VERSION</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">logger</span>::<span class="ident">Log</span>;
 
 <span class="doccomment">/// A struct that can be used to build the Websocket `warp` filter, see the `new` method.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Ws</span> {}
@@ -128,30 +130,30 @@
 
 <span class="doccomment">/// Handle a websocket connection.</span>
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">handler</span>(<span class="ident">ws</span>: <span class="ident">WebSocket</span>) {
-    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;[Websocket] Connection&quot;</span>);
+    <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">Websocket</span>, <span class="string">&quot;Connection&quot;</span>);
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">sending_ws</span>, <span class="kw-2">mut</span> <span class="ident">listening_ws</span>) <span class="op">=</span> <span class="ident">ws</span>.<span class="ident">split</span>();
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">result</span>) <span class="op">=</span> <span class="ident">listening_ws</span>.<span class="ident">next</span>().<span class="kw">await</span> {
         <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">result</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">msg</span>) <span class="op">=&gt;</span> <span class="ident">msg</span>,
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
-                <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;[Websocket] Receiving error: &#39;{}&#39;&quot;</span>, <span class="ident">e</span>);
+                <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">Websocket</span>, <span class="string">&quot;Receiving error: &#39;{}&#39;&quot;</span>, <span class="ident">e</span>);
                 <span class="kw">break</span>;
             }
         };
         <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">msg</span>) <span class="op">=</span> <span class="ident">msg</span>.<span class="ident">to_str</span>() {
             <span class="ident">msg</span>
         } <span class="kw">else</span> {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;[Websocket] Could not interpret message as str&quot;</span>);
+            <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">Websocket</span>, <span class="string">&quot;Could not interpret message as str&quot;</span>);
             <span class="kw">break</span>;
         };
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">sending_ws</span>.<span class="ident">send</span>(<span class="ident">Message</span>::<span class="ident">text</span>(<span class="ident">handle_request</span>(<span class="ident">msg</span>))).<span class="kw">await</span> {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;[Websocket] Sending error: &#39;{}&#39;&quot;</span>, <span class="ident">e</span>);
+            <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">Websocket</span>, <span class="string">&quot;Sending error: &#39;{}&#39;&quot;</span>, <span class="ident">e</span>);
             <span class="kw">break</span>;
         };
     }
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">ws</span>) <span class="op">=</span> <span class="ident">sending_ws</span>.<span class="ident">reunite</span>(<span class="ident">listening_ws</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">ws</span>.<span class="ident">close</span>().<span class="kw">await</span> {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;[Websocket] Closing error: &#39;{}&#39;&quot;</span>, <span class="ident">e</span>);
+            <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">Websocket</span>, <span class="string">&quot;Closing error: &#39;{}&#39;&quot;</span>, <span class="ident">e</span>);
         };
     };
 }

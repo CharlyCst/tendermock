@@ -122,19 +122,19 @@
         <span class="kw">let</span> <span class="ident">client_state</span> <span class="op">=</span> <span class="ident">dummy_client_state</span>();
         <span class="kw">let</span> <span class="ident">consensus_state</span> <span class="op">=</span> <span class="ident">dummy_consensus_state</span>();
 
-        <span class="comment">// ClientType</span>
         <span class="ident">node</span>.<span class="ident">store_client_type</span>(<span class="ident">client_id</span>.<span class="ident">clone</span>(), <span class="ident">ClientType</span>::<span class="ident">Tendermint</span>)
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">client_type</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">client_type</span>(<span class="kw-2">&amp;</span><span class="ident">client_id</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">client_type</span>, <span class="ident">ClientType</span>::<span class="ident">Tendermint</span>);
-        <span class="comment">// ClientState</span>
         <span class="ident">node</span>.<span class="ident">store_client_state</span>(<span class="ident">client_id</span>.<span class="ident">clone</span>(), <span class="ident">client_state</span>.<span class="ident">clone</span>())
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">retrieved_client</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">client_state</span>(<span class="kw-2">&amp;</span><span class="ident">client_id</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">client_state</span>, <span class="ident">retrieved_client</span>);
-        <span class="comment">// ConsensusState</span>
         <span class="ident">node</span>.<span class="ident">store_consensus_state</span>(<span class="ident">client_id</span>.<span class="ident">clone</span>(), <span class="ident">height</span>.<span class="ident">clone</span>(), <span class="ident">consensus_state</span>.<span class="ident">clone</span>())
             .<span class="ident">unwrap</span>();
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">node</span>.<span class="ident">read</span>().<span class="ident">get_store</span>());
+        <span class="ident">node</span>.<span class="ident">grow</span>();
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">node</span>.<span class="ident">read</span>().<span class="ident">get_store</span>());
+        <span class="kw">let</span> <span class="ident">client_type</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">client_type</span>(<span class="kw-2">&amp;</span><span class="ident">client_id</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">client_type</span>, <span class="ident">ClientType</span>::<span class="ident">Tendermint</span>);
+        <span class="kw">let</span> <span class="ident">retrieved_client</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">client_state</span>(<span class="kw-2">&amp;</span><span class="ident">client_id</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">client_state</span>, <span class="ident">retrieved_client</span>);
         <span class="kw">let</span> <span class="ident">retrieved_consensus</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">consensus_state</span>(<span class="kw-2">&amp;</span><span class="ident">client_id</span>, <span class="ident">height</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">consensus_state</span>, <span class="ident">retrieved_consensus</span>);
     }

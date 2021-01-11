@@ -330,6 +330,22 @@
 <span id="329">329</span>
 <span id="330">330</span>
 <span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! # AVL Tree</span>
 <span class="doccomment">//!</span>
@@ -363,7 +379,7 @@
 <span class="kw">type</span> <span class="ident">NodeRef</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">AvlNode</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">V</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// A node in the AVL Tree.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">struct</span> <span class="ident">AvlNode</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">Ord</span>, <span class="ident">V</span><span class="op">&gt;</span> {
     <span class="ident">key</span>: <span class="ident">K</span>,
     <span class="ident">value</span>: <span class="ident">V</span>,
@@ -376,7 +392,7 @@
 
 <span class="doccomment">/// An AVL Tree that supports `get` and `insert` operation and can be used to prove existence of a</span>
 <span class="doccomment">/// given key-value couple.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AvlTree</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">AsBytes</span>, <span class="ident">V</span><span class="op">&gt;</span> {
     <span class="ident">root</span>: <span class="ident">NodeRef</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>,
 }
@@ -660,6 +676,22 @@
         <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">right</span>.<span class="ident">left</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">Some</span>(<span class="ident">node</span>));
         <span class="ident">right</span>.<span class="ident">update</span>();
         <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">swap</span>(<span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">Some</span>(<span class="ident">right</span>))
+    }
+
+    <span class="doccomment">/// Return a list of the keys present in the tree.</span>
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">K</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">keys</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="self">Self</span>::<span class="ident">get_keys_rec</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">keys</span>);
+        <span class="ident">keys</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">get_keys_rec</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span> ,<span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="ident">node_ref</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">NodeRef</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>, <span class="ident">keys</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span><span class="op">&gt;</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">node</span>) <span class="op">=</span> <span class="ident">node_ref</span> {
+            <span class="self">Self</span>::<span class="ident">get_keys_rec</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>.<span class="ident">left</span>, <span class="ident">keys</span>);
+            <span class="ident">keys</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>.<span class="ident">key</span>);
+            <span class="self">Self</span>::<span class="ident">get_keys_rec</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>.<span class="ident">right</span>, <span class="ident">keys</span>);
+        }
     }
 }
 </pre></div>

@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["api","The Tendermock JsonRPC HTTP API."],["utils","A JsonRPC mini-framework."],["websockets","The Tendermock JsonRPC Websocket API."]]});
+initSidebarItems({"constant":[["WEBSOCKET_PATH",""]],"fn":[["serve","Create a new gRPC server."]],"mod":[["api","The Tendermock JsonRPC HTTP API."],["utils","A JsonRPC mini-framework."],["websockets","The Tendermock JsonRPC Websocket API."]]});
