@@ -223,3 +223,7 @@ On another theme, I added support for b`roadcast_tx_commit`, but the TxResult is
 - Hit a blocker: `create-client` does not create a client type (see [here](https://github.com/informalsystems/ibc-rs/blob/9c5d4f60732db62626cd7163f7e3b87f9f3c289a/modules/src/ics02_client/handler/update_client.rs#L33)) but `update-client` expects one (see [here](https://github.com/informalsystems/ibc-rs/blob/9c5d4f60732db62626cd7163f7e3b87f9f3c289a/modules/src/ics02_client/handler/update_client.rs#L33)). Who is responsible for creating the client type???
 
 
+## Janueary 11
+
+- Call `store_client_type` on `store_client_state` so that the client type can be retrieved once its state exists.
+- Improve logging.

@@ -217,6 +217,9 @@ impl<S: Storage> ClientKeeper for SharedNode<S> {
         client_state: AnyClientState,
     ) -> Result<(), ClientError> {
         let path = format!("clients/{}/clientState", client_id.as_str());
+        // Store the client type
+        self.store_client_type(client_id.clone(), client_state.client_type())?;
+        // Store the client state
         let data: Any = client_state.into();
         let mut buffer = Vec::new();
         data.encode(&mut buffer)

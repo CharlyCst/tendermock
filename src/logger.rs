@@ -15,17 +15,15 @@ pub enum Log {
     JRPC,
     GRPC,
     Chain,
-    ABCI,
     Websocket,
 }
 
 impl Log {
     pub fn as_str(self) -> ColoredString {
         match self {
-            Log::Websocket => "[Websocket]".blue(),
+            Log::Websocket => "[Websocket]".cyan(),
             Log::JRPC => "[JsonRPC]".yellow(),
             Log::Chain => "[Chain]".magenta(),
-            Log::ABCI => "[abci]".cyan(),
             Log::GRPC => "[gRPC]".green(),
         }
     }

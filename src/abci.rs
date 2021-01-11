@@ -8,7 +8,6 @@ use tendermint_rpc::endpoint::{
     abci_info::AbciInfo, abci_query::AbciQuery, abci_query::Request as AbciQueryRequest,
 };
 
-use crate::logger::Log;
 use crate::node::Node;
 use crate::store::Storage;
 
@@ -29,10 +28,6 @@ pub fn get_info<S: Storage>(node: &Node<S>) -> AbciInfo {
 
 /// Handle an ABCI query.
 pub fn handle_query<S: Storage>(query: AbciQueryRequest, node: &Node<S>) -> AbciQuery {
-    log!(Log::ABCI,
-        "data: {}",
-        String::from_utf8(query.data.clone()).unwrap_or("".to_string())
-    );
     let height = match query.height {
         None => 0,
         Some(h) => h.value(),

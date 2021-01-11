@@ -44,7 +44,7 @@ fn main() {
     let jrpc_server = jrpc::serve(node.clone(), args.verbose, addr);
 
     // gRPC server
-    let addr = format!("[::1]:{}", &args.grpc_port).parse().unwrap();
+    let addr = format!("[::1]:{}", args.grpc_port).parse().unwrap();
     let grpc_server = grpc::serve(node, args.verbose, addr);
 
     // Start servers

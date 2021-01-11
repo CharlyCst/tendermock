@@ -15,9 +15,9 @@ use tendermint_rpc::endpoint::{
     validators::Request as ValidatorsRequest, validators::Response as ValidatorResponse,
 };
 
-use crate::logger::Log;
 use crate::abci;
 use crate::chain::to_full_block;
+use crate::logger::Log;
 use crate::node;
 use crate::store;
 
@@ -187,7 +187,12 @@ where
     /// JsonRPC /abci_query endpoint.
     fn abci_query(req: AbciQueryRequest, state: Self) -> JrpcResult<AbciQueryResponse> {
         if state.verbose {
-            log!(Log::JRPC, "/abci_query {:?}", req);
+            log!(
+                Log::JRPC,
+                "/abci_query {{ path: {:?}, data: {} }}",
+                req.path,
+                String::from_utf8(req.data.clone()).unwrap_or("".to_string())
+            );
         }
         let node = state.node.read();
         Ok(AbciQueryResponse {
@@ -201,7 +206,7 @@ where
         mut state: Self,
     ) -> JrpcResult<BroadcastTxCommitResponse> {
         if state.verbose {
-            log!(Log::JRPC, "/broadcast_tx_commit {:?}", req);
+            log!(Log::JRPC, "/broadcast_tx_commit {{ tx: {} bytes }}", req.tx.as_bytes().len());
         }
         // Grow chain
         let node = state.node.write();
