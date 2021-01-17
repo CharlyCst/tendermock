@@ -357,6 +357,9 @@
 <span id="356">356</span>
 <span id="357">357</span>
 <span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! # Node</span>
 <span class="doccomment">//!</span>
@@ -577,6 +580,9 @@
         <span class="ident">client_state</span>: <span class="ident">AnyClientState</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ClientError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;clients/{}/clientState&quot;</span>, <span class="ident">client_id</span>.<span class="ident">as_str</span>());
+        <span class="comment">// Store the client type</span>
+        <span class="self">self</span>.<span class="ident">store_client_type</span>(<span class="ident">client_id</span>.<span class="ident">clone</span>(), <span class="ident">client_state</span>.<span class="ident">client_type</span>())<span class="question-mark">?</span>;
+        <span class="comment">// Store the client state</span>
         <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Any</span> <span class="op">=</span> <span class="ident">client_state</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
         <span class="ident">data</span>.<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)

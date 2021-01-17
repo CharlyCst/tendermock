@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["tendermock"] = [{"text":"impl&lt;K:&nbsp;Ord, V&gt; StructuralPartialEq for AvlNode&lt;K, V&gt;","synthetic":false,"types":[]},{"text":"impl&lt;K:&nbsp;Ord + AsBytes, V&gt; StructuralPartialEq for AvlTree&lt;K, V&gt;","synthetic":false,"types":[]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

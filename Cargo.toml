@@ -6,7 +6,7 @@ edition = "2018"
 
 [[bin]]
 name = "tendermock"
-path = "src/main.rs"
+path = "src/bin/main.rs"
 
 [dependencies]
 # Serialization

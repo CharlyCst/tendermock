@@ -1,1 +1,0 @@
-initSidebarItems({"constant":[["COMMITMENT_PREFIX",""]],"struct":[["Connections","A type representing connections in memory"],["Node","A node contains a store, a chain and some meta-data."],["SharedNode","An `Arc<RwLock<>>` wrapper around a Node."]]});

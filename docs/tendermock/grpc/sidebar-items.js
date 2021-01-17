@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["serve","Create a new gRPC server."]],"mod":[["auth","gRPC Auth"],["staking","gRPC Staking"]]});

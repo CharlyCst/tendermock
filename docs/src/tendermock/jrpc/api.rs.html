@@ -233,6 +233,11 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! The Tendermock JsonRPC HTTP API.</span>
 <span class="kw">use</span> <span class="ident">ibc</span>::<span class="ident">ics26_routing</span>::<span class="ident">handler</span>::<span class="ident">deliver</span>;
@@ -251,9 +256,9 @@
     <span class="ident">validators</span>::<span class="ident">Request</span> <span class="kw">as</span> <span class="ident">ValidatorsRequest</span>, <span class="ident">validators</span>::<span class="ident">Response</span> <span class="kw">as</span> <span class="ident">ValidatorResponse</span>,
 };
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">logger</span>::<span class="ident">Log</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abci</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">chain</span>::<span class="ident">to_full_block</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">logger</span>::<span class="ident">Log</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">node</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">store</span>;
 
@@ -423,7 +428,12 @@
     <span class="doccomment">/// JsonRPC /abci_query endpoint.</span>
     <span class="kw">fn</span> <span class="ident">abci_query</span>(<span class="ident">req</span>: <span class="ident">AbciQueryRequest</span>, <span class="ident">state</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">JrpcResult</span><span class="op">&lt;</span><span class="ident">AbciQueryResponse</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">state</span>.<span class="ident">verbose</span> {
-            <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">JRPC</span>, <span class="string">&quot;/abci_query {:?}&quot;</span>, <span class="ident">req</span>);
+            <span class="macro">log</span><span class="macro">!</span>(
+                <span class="ident">Log</span>::<span class="ident">JRPC</span>,
+                <span class="string">&quot;/abci_query {{ path: {:?}, data: {} }}&quot;</span>,
+                <span class="ident">req</span>.<span class="ident">path</span>,
+                <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">req</span>.<span class="ident">data</span>.<span class="ident">clone</span>()).<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>())
+            );
         }
         <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">node</span>.<span class="ident">read</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">AbciQueryResponse</span> {
@@ -437,7 +447,7 @@
         <span class="kw-2">mut</span> <span class="ident">state</span>: <span class="self">Self</span>,
     ) <span class="op">-&gt;</span> <span class="ident">JrpcResult</span><span class="op">&lt;</span><span class="ident">BroadcastTxCommitResponse</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">state</span>.<span class="ident">verbose</span> {
-            <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">JRPC</span>, <span class="string">&quot;/broadcast_tx_commit {:?}&quot;</span>, <span class="ident">req</span>);
+            <span class="macro">log</span><span class="macro">!</span>(<span class="ident">Log</span>::<span class="ident">JRPC</span>, <span class="string">&quot;/broadcast_tx_commit {{ tx: {} bytes }}&quot;</span>, <span class="ident">req</span>.<span class="ident">tx</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>());
         }
         <span class="comment">// Grow chain</span>
         <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">node</span>.<span class="ident">write</span>();

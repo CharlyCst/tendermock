@@ -52,3 +52,6 @@ rm -rf docs
 mv target/doc docs
 ```
 
+## With the relayer
+
+see [this example](https://gist.github.com/CharlyCst/48fc02d4c1e6ed59e6395ee6ae766703)

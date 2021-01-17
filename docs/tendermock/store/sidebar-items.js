@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["InMemoryStore","An in-memory store backed by a simple hashmap."]],"trait":[["Storage","A concurrent, on chain storage using interior mutability."]]});

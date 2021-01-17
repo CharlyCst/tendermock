@@ -19,8 +19,8 @@ RUN cargo build --release
 FROM alpine:latest
 ARG APP=/usr/src/app
 
-EXPOSE 50051 # gRPC
-EXPOSE 26657 # JsonRPC
+# gRPC & JsonRpc
+EXPOSE 50051 26657
 
 ENV NODE_USER=tendermock
 ENV NODE_GROUP=mock

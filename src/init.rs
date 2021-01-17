@@ -15,6 +15,7 @@ use std::str::FromStr;
 use tendermint;
 use tendermint::trust_threshold::TrustThresholdFraction;
 
+/// Initialize the client keeper by registering all the client present in the configuration.
 pub fn init<T: ClientKeeper>(keeper: &mut T, config: &Config) {
     for client in &config.clients {
         add_client(keeper, client, config);

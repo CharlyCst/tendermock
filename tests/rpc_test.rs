@@ -2,12 +2,13 @@ use ibc_proto::cosmos::staking::v1beta1::query_client::QueryClient;
 use ibc_proto::cosmos::staking::v1beta1::QueryParamsRequest;
 /// Integration tests for tendermock JsonRPC and gRPC server.
 use std::process::{Command, Stdio};
+use tendermock::Tendermock;
 use tokio;
 use tonic;
 
-const EXECUTABLE: &str = "tendermock";
-const GRPC_ADDR: &str = "http://[::1]:50051";
 const JSON_RPC_ADDR: &str = "127.0.0.1:26657";
+const GRPC_ADDR: &str = "127.0.0.1:50051";
+const GRPC_URL: &str = "http://127.0.0.1:50051";
 const JRPC_QUERIES: &[&str] = &[
     "abci_info.json",
     "abci_query.json",
@@ -18,31 +19,17 @@ const JRPC_QUERIES: &[&str] = &[
     "validators.json",
 ];
 
-/// Represents a server process.
-/// A server is started on instantiation, and killed when it goes out of scope.
-struct Server {
-    process: std::process::Child,
-}
-
-impl Server {
-    pub fn new() -> Self {
-        let child = Command::new(format!("./target/debug/{}", EXECUTABLE))
-            .spawn()
-            .expect("Failed to start server process");
-        std::thread::sleep(std::time::Duration::new(2, 0));
-        Server { process: child }
-    }
-}
-
-impl Drop for Server {
-    fn drop(&mut self) {
-        self.process.kill().unwrap();
-    }
+/// Spwan a server in another thread.
+fn start_server() {
+    let mut node = Tendermock::new();
+    node.add_interface(JSON_RPC_ADDR.parse().unwrap(), GRPC_ADDR.parse().unwrap());
+    std::thread::spawn(move || node.start());
+    std::thread::sleep(std::time::Duration::new(2, 0));
 }
 
 #[tokio::test]
 async fn rpc() {
-    let _server = Server::new();
+    start_server();
     test_grpc().await;
     for query in JRPC_QUERIES {
         test_json_rpg(query);
@@ -50,7 +37,7 @@ async fn rpc() {
 }
 
 async fn test_grpc() {
-    let mut client = QueryClient::connect(GRPC_ADDR).await.unwrap();
+    let mut client = QueryClient::connect(GRPC_URL).await.unwrap();
     let request = tonic::Request::new(QueryParamsRequest {});
     client
         .params(request)

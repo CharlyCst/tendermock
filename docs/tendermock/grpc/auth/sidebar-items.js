@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["get_service",""]],"struct":[["QueryService","A struct handling the `Query` service."]]});

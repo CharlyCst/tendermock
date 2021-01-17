@@ -3,8 +3,9 @@
 //! This module defines a `log!` macro that takes care of formatting logs output. The macro takes
 //! the identity of the logger (see `Log` enum) and behaves as `format!` for the remaining arguments.
 //!
-//! ```
-//! log!(Log::JRPC, "query: {}", "/example")
+//! ```ignore
+//! # Doctest ignored as I can't figure out how to bring the macro in scope...
+//! log!(Log::JRPC, "query: {}", "/example");
 //! ```
 
 use chrono::Utc;

@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["tendermock"] = [{"text":"impl Serialize for JrpcErrorDetails","synthetic":false,"types":[]},{"text":"impl&lt;T&gt; Serialize for JrpcResponse&lt;T&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: Serialize,&nbsp;</span>","synthetic":false,"types":[]},{"text":"impl Serialize for Connections","synthetic":false,"types":[]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
