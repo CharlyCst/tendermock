@@ -148,6 +148,7 @@
 <span id="147">147</span>
 <span id="148">148</span>
 <span id="149">149</span>
+<span id="150">150</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! # Tendermock Builder API</span>
 <span class="doccomment">//!</span>
@@ -200,7 +201,7 @@
         }
     }
 
-    <span class="doccomment">/// Set the interval between two new blocks.</span>
+    <span class="doccomment">/// Set the interval between two new blocks, in seconds.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">growth_rate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">interval</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">growth_interval</span> <span class="op">=</span> <span class="ident">interval</span>;
         <span class="self">self</span>
@@ -218,6 +219,7 @@
         <span class="self">self</span>
     }
 
+    <span class="doccomment">/// Enable or disable verbose logging, default to off.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">verbose</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">verbose</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">verbose</span> <span class="op">=</span> <span class="ident">verbose</span>;
         <span class="self">self</span>

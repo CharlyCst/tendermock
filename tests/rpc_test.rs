@@ -7,7 +7,9 @@ use tokio;
 use tonic;
 
 const JSON_RPC_ADDR: &str = "127.0.0.1:26657";
+const JSON_RPC_ADDR_2: &str = "127.0.0.1:26658";
 const GRPC_ADDR: &str = "127.0.0.1:50051";
+const GRPC_ADDR_2: &str = "127.0.0.1:50052";
 const GRPC_URL: &str = "http://127.0.0.1:50051";
 const JRPC_QUERIES: &[&str] = &[
     "abci_info.json",
@@ -22,7 +24,11 @@ const JRPC_QUERIES: &[&str] = &[
 /// Spwan a server in another thread.
 fn start_server() {
     let mut node = Tendermock::new();
-    node.add_interface(JSON_RPC_ADDR.parse().unwrap(), GRPC_ADDR.parse().unwrap());
+    node.add_interface(JSON_RPC_ADDR.parse().unwrap(), GRPC_ADDR.parse().unwrap())
+        .add_interface(
+            JSON_RPC_ADDR_2.parse().unwrap(),
+            GRPC_ADDR_2.parse().unwrap(),
+        );
     std::thread::spawn(move || node.start());
     std::thread::sleep(std::time::Duration::new(2, 0));
 }
@@ -32,8 +38,9 @@ async fn rpc() {
     start_server();
     test_grpc().await;
     for query in JRPC_QUERIES {
-        test_json_rpg(query);
+        test_json_rpg(query, JSON_RPC_ADDR_2);
     }
+    test_json_rpg(JRPC_QUERIES[0], JSON_RPC_ADDR_2)
 }
 
 async fn test_grpc() {
@@ -45,7 +52,7 @@ async fn test_grpc() {
         .expect("gRPC 'param' request failed");
 }
 
-fn test_json_rpg(query: &str) {
+fn test_json_rpg(query: &str, jrpc_addr: &str) {
     let json_response = Command::new("curl")
         .arg("-s")
         .arg("-X")
@@ -54,7 +61,7 @@ fn test_json_rpg(query: &str) {
         .arg("Content-Type: application/json")
         .arg("-d")
         .arg(&format!("@queries/{}", query))
-        .arg(JSON_RPC_ADDR)
+        .arg(jrpc_addr)
         .stdout(Stdio::piped())
         .spawn()
         .expect("HTTP request failed")

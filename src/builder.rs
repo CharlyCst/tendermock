@@ -49,7 +49,7 @@ impl Tendermock {
         }
     }
 
-    /// Set the interval between two new blocks.
+    /// Set the interval between two new blocks, in seconds.
     pub fn growth_rate(&mut self, interval: u64) -> &mut Self {
         self.growth_interval = interval;
         self
@@ -67,6 +67,7 @@ impl Tendermock {
         self
     }
 
+    /// Enable or disable verbose logging, default to off.
     pub fn verbose(&mut self, verbose: bool) -> &mut Self {
         self.verbose = verbose;
         self

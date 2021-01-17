@@ -1,6 +1,6 @@
 # Tendermock
 
-A fake Tendermind for testing purposes.
+A fake Tendermint for testing purposes.
 
 ## How to use:
 
@@ -42,6 +42,23 @@ A few example queries are available in `./queries`, the node can easily be queri
 curl -X POST -H 'Content-Type: application/json' -d @queries/block.json 127.0.0.1:26657/ | jq
 ```
 
+## Using as a library
+
+Tendermock can also be used as a library through a builder API, this can be useful for integration testing by spawning a server from Rust code:
+
+```rust
+use tendermock::Tendermock;
+
+let jrpc_addr = format!("127.0.0.1:{}", 5000).parse().unwrap();
+let grpc_addr = format!("127.0.0.1:{}", 6000).parse().unwrap();
+
+Tendermock::new()
+    .verbose(true)
+    .growth_rate(10)
+    .add_interface(jrpc_addr, grpc_addr)
+    .start();
+```
+
 ## Building the doc
 
 Run the following commands:
@@ -52,6 +69,6 @@ rm -rf docs
 mv target/doc docs
 ```
 
-## With the relayer
+## Testing with the relayer
 
 see [this example](https://gist.github.com/CharlyCst/48fc02d4c1e6ed59e6395ee6ae766703)

@@ -31,6 +31,7 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
+<span id="33">33</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! # Tendermock</span>
 <span class="doccomment">//!</span>
@@ -38,14 +39,15 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```no_run</span>
 <span class="doccomment">//! use tendermock::Tendermock;</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//! let jrpc_addr = format!(&quot;127.0.0.1:{}&quot;, 5000).parse().unwrap();</span>
 <span class="doccomment">//! let grpc_addr = format!(&quot;127.0.0.1:{}&quot;, 6000).parse().unwrap();</span>
-<span class="doccomment">//! let mut node = Tendermock::new();</span>
-<span class="doccomment">//! node</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Tendermock::new()</span>
 <span class="doccomment">//!     .verbose(true)</span>
 <span class="doccomment">//!     .growth_rate(10)</span>
-<span class="doccomment">//!     .add_interface(jrpc_addr, grpc_addr);</span>
-<span class="doccomment">//! node.start();</span>
+<span class="doccomment">//!     .add_interface(jrpc_addr, grpc_addr)</span>
+<span class="doccomment">//!     .start();</span>
 <span class="doccomment">//! ```</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
