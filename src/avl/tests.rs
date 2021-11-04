@@ -163,6 +163,31 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn key_overwrite() {
+        let mut tree = AvlTree::new();
+        tree.insert("K", [1]);
+        tree.insert("K", [0]);
+        assert!(check_integrity(&tree.root));
+
+        let root = tree
+            .root_hash()
+            .expect("Unable to retrieve root hash")
+            .as_bytes()
+            .to_vec();
+        let proof = tree
+            .get_proof("K")
+            .expect("Unable to retrieve a proof for 'K'");
+        let spec = get_proof_spec();
+        assert!(verify_membership(
+            &proof,
+            &spec,
+            &root,
+            "K".as_bytes(),
+            &[0]
+        ));
+    }
+
     /// Check that nodes are ordered, heights are correct and that balance factors are in {-1, 0, 1}.
     fn check_integrity<T: Ord, V>(node_ref: &NodeRef<T, V>) -> bool {
         if let Some(node) = node_ref {

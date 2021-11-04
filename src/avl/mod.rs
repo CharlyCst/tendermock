@@ -79,6 +79,13 @@ where
         };
     }
 
+    /// Set the value of the current node.
+    fn set_value(&mut self, value: V) {
+        let hash = Self::local_hash(&self.key, &value);
+        self.value = value;
+        self.hash = hash;
+    }
+
     /// The left height, or None if there is no left child.
     fn left_height(&self) -> Option<u32> {
         if let Some(ref left) = self.left {
@@ -95,6 +102,16 @@ where
         } else {
             None
         }
+    }
+
+    /// Compute the local hash for a given key and value.
+    fn local_hash(key: &K, value: &V) -> Hash {
+        let mut sha = Sha256::new();
+        sha.update(proof::LEAF_PREFIX);
+        sha.update(key.as_bytes());
+        sha.update(value.borrow());
+        let hash = sha.finalize();
+        Hash::from_bytes(HASH_ALGO, &hash).unwrap()
     }
 
     /// The left merkle hash, if any
@@ -196,7 +213,7 @@ where
             match node.key.cmp(&key) {
                 Ordering::Greater => AvlTree::insert_rec(&mut node.left, key, value),
                 Ordering::Less => AvlTree::insert_rec(&mut node.right, key, value),
-                Ordering::Equal => node.key = key,
+                Ordering::Equal => node.set_value(value),
             }
             node.update();
             AvlTree::balance_node(node_ref);
@@ -337,7 +354,7 @@ where
         keys
     }
 
-    fn get_keys_rec<'a ,'b>(node_ref: &'a NodeRef<K, V>, keys: &'b mut Vec<&'a K>) {
+    fn get_keys_rec<'a, 'b>(node_ref: &'a NodeRef<K, V>, keys: &'b mut Vec<&'a K>) {
         if let Some(node) = node_ref {
             Self::get_keys_rec(&node.left, keys);
             keys.push(&node.key);
